@@ -1,3 +1,3 @@
-# ponyzmq
+# pony-zmq
 
-ZeroMQ bindings for the Pony language.
+Pure Pony implementation of the ZeroMQ messaging library.
