@@ -2,7 +2,8 @@
 use "collections"
 
 type Inspectable is
-  ( String box
+  ( Stringable box
+  | String box
   | Array[U8] box
   | Map[String, String])
 
@@ -16,6 +17,7 @@ primitive Inspect
     let output: String trn = recover String end
     
     match input
+    | let x: Stringable box => output.append(x.string())
     | let x: String box =>
       output.push('"')
       let iter = x.values()

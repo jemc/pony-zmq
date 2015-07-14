@@ -1,80 +1,59 @@
 
 use "net"
 use "collections"
-use "../inspect"
 
-primitive _ConnectionStateReadGreeting
-primitive _ConnectionStateReadHandshakeReady
-primitive _ConnectionStateReadMessage
-
-type _ConnectionState is
-  ( _ConnectionStateReadGreeting
-  | _ConnectionStateReadMessage
-  | _ConnectionStateReadHandshakeReady)
-
-class _ClientConnection is TCPConnectionNotify
+class _ClientConnection is TCPConnectionNotify // TODO: abstract away TCP types
   let _parent: Client tag
+  let _socket_type: String val
+  
   let _buffer: Buffer = Buffer
+  var _protocol: Protocol = ProtocolNone
   
-  var _state: _ConnectionState = _ConnectionStateReadGreeting
-  var _command: _Command = _CommandUnknown
-  
-  new iso create(parent: Client) =>
+  new iso create(parent: Client, socket_type: String) =>
     _parent = parent
+    _socket_type = socket_type
   
-  fun ref next_state(state: _ConnectionState) =>
-    _state = state
-  
-  fun ref _read_greeting(conn: TCPConnection ref) =>
-    try
-      (let success, let string) = _Greeting.read(_buffer)
-      if success then
-        next_state(_ConnectionStateReadHandshakeReady)
-      else
-        _protocol_error(conn, string)
-      end
-    end
-  
-  fun ref _read_command(conn: TCPConnection ref) =>
-    try
-      _command = _CommandAuthNullReady
-      (let success, let string) = _CommandParser.read(_command, _buffer)
-      if success then
-        Inspect.print("command name " + Inspect(_command.name()))
-        try
-          let c = _command as _CommandAuthNullReady
-          Inspect.print("command metadata " + Inspect(c.metadata))
-        end
-        next_state(_ConnectionStateReadMessage)
-      else
-        _protocol_error(conn, string)
-      end
-    end
-  
-  fun ref _protocol_error(conn: TCPConnection ref, message: String val) =>
-    Inspect.print("protocol_error " + message)
-    conn.close()
-    next_state(_ConnectionStateReadGreeting)
+  ///
+  // TCPConnectionNotify methods
   
   fun ref accepted(conn: TCPConnection ref) =>
-    Inspect.print("accepted!")
+    _reset(conn)
   
   fun ref connected(conn: TCPConnection ref) =>
-    Inspect.print("connected!")
-    conn.write(_Greeting.write())
-    Inspect.print("greeted!")
+    _reset(conn)
   
   fun ref connect_failed(conn: TCPConnection ref) =>
-    Inspect.print("connect_failed!")
+    _parent._disconnected(conn)
   
   fun ref closed(conn: TCPConnection ref) =>
-    Inspect.print("closed!")
+    _parent._disconnected(conn)
   
   fun ref received(conn: TCPConnection ref, data: Array[U8] iso) =>
-    match _state
-    | _ConnectionStateReadGreeting       => _buffer.append(consume data); _read_greeting(conn)
-    | _ConnectionStateReadHandshakeReady => _buffer.append(consume data); _read_command(conn)
-    else
-      let data_ref: Array[U8] ref = (consume data)
-      Inspect.print("received " + Inspect(data_ref))
-    end
+    _buffer.append(consume data)
+    _protocol.handle_input(conn, _buffer)
+  
+  ///
+  // Private convenience methods
+  
+  fun ref _reset(peer: _ClientPeer ref) =>
+    _protocol = ProtocolAuthNull.create(this, _socket_type)
+    _protocol.handle_start(peer)
+    _buffer.clear()
+  
+  ///
+  // Callback methods from protocol
+  
+  fun ref write(peer: _ClientPeer ref, data: Array[U8] val) =>
+    peer.write(data)
+  
+  fun protocol_error(peer: _ClientPeer ref, string: String) ? =>
+    _parent._protocol_error(peer, string)
+    peer.dispose()
+    error
+  
+  fun handshake_complete(peer: _ClientPeer ref) =>
+    _parent._connected(peer)
+  
+  fun received_message(peer: _ClientPeer ref, message: Message) =>
+    _parent._received(peer, message)
+

@@ -4,20 +4,29 @@ use "collections"
 
 interface _Command
   fun name(): String val
-  fun ref read_bytes(bytes: Array[U8] val)
   fun write_bytes(): Array[U8] val
+  fun ref read_bytes(bytes: Array[U8] val)
 
-class _CommandUnknown is _Command
-  var bytes: Array[U8] val = recover Array[U8] end
-  fun name(): String => ""
-  fun ref read_bytes(bytes': Array[U8] val) => bytes = bytes'
-  fun write_bytes(): Array[U8] val => bytes
-
-class _CommandAuthNullReady is _Command
-  let metadata: Map[String, String] = Map[String, String]
-  fun name(): String => "READY"
+class _CommandUtil
+  fun tag read_bytes_as_metadata(metadata: Map[String, String], bytes: Array[U8] val) =>
+    let buffer = Buffer.append(bytes)
+    if metadata.size() > 0 then metadata.clear() end
+    
+    while buffer.size() > 0 do
+      try
+        let key   = recover iso String end
+        let value = recover iso String end
+        
+        let key_size = U64.from[U8](buffer.u8())
+        key.append(buffer.block(key_size))
+        let value_size = U64.from[U32](buffer.u32_be())
+        value.append(buffer.block(value_size))
+        
+        metadata.update(consume key, consume value)
+      end
+    end
   
-  fun write_bytes(): Array[U8] val =>
+  fun tag write_bytes_as_metadata(metadata: Map[String, String] box): Array[U8] val =>
     let output = recover trn Array[U8] end
     
     for (key, value) in metadata.pairs() do
@@ -28,23 +37,18 @@ class _CommandAuthNullReady is _Command
     end
     
     output
-  
-  fun ref read_bytes(bytes: Array[U8] val) =>
-    let buffer = Buffer.append(bytes)
-    
-    while buffer.size() > 0 do
-      try
-        let key:   String iso = recover String end
-        let value: String iso = recover String end
-        
-        let key_size = U64.from[U8](buffer.u8())
-        key.append(buffer.block(key_size))
-        let value_size = U64.from[U32](buffer.u32_be())
-        value.append(buffer.block(value_size))
-        
-        metadata.update(consume key, consume value)
-      end
-    end
+
+class _CommandUnknown is _Command
+  var bytes: Array[U8] val = recover Array[U8] end
+  fun name(): String => ""
+  fun write_bytes(): Array[U8] val          => bytes
+  fun ref read_bytes(bytes': Array[U8] val) => bytes = bytes'
+
+class _CommandAuthNullReady is _Command
+  let metadata: Map[String, String] = Map[String, String]
+  fun name(): String => "READY"
+  fun write_bytes(): Array[U8] val         => _CommandUtil.write_bytes_as_metadata(metadata)
+  fun ref read_bytes(bytes: Array[U8] val) => _CommandUtil.read_bytes_as_metadata(metadata, bytes)
 
 primitive _CommandParser
   fun write(command: _Command box): Array[U8] val =>
@@ -62,7 +66,7 @@ primitive _CommandParser
     let ident: U8 = if is_short then 0x04 else 0x06 end
     let size      = if is_short then inner.size().u8() else inner.size() end
     
-    //Write the ident, size, and the inner byte array to the output byte array.
+    // Write the ident, size, and the inner byte array to the output byte array.
     output.push(ident)
     output.append(_Util.make_bytes(size))
     output.append(inner)
@@ -100,5 +104,4 @@ primitive _CommandParser
     
     // Apply the body to the given command's name and return success
     command.read_bytes(body)
-    write(command) // TODO: remove
     (true, consume name)
