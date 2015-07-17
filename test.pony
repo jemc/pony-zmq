@@ -15,5 +15,6 @@ class _TestZMTPClient is UnitTest
   
   fun apply(h: TestHelper): TestResult =>
     let a = zmtp.Client("PULL")
-    a.connect("localhost", "8899")
+    // a.connect("localhost", "8899")
+    a.bind("localhost", "8899")
     true

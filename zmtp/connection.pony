@@ -57,3 +57,14 @@ class _ClientConnection is TCPConnectionNotify // TODO: abstract away TCP types
   fun received_message(peer: _ClientPeer ref, message: Message) =>
     _parent._received(peer, message)
 
+
+class _ClientListenerConnection is TCPListenNotify
+  let _parent: Client tag
+  let _socket_type: String val
+  
+  new iso create(parent: Client, socket_type: String) =>
+    _parent = parent
+    _socket_type = socket_type
+  
+  fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
+    _ClientConnection(_parent, _socket_type)
