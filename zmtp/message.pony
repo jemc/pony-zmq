@@ -6,9 +6,14 @@ type Frame is Array[U8] val
 type Message is List[Frame] val
 
 class _MessageParser
-  var message: Message trn = recover trn Message end
+  var message: Message trn = recover Message end
   
-  new create() => None
+  fun ref take_message(): Message trn^ =>
+    """
+    Transfer ownership of the current message to the caller and start a new one.
+    """
+    message = recover Message end
+  
   fun write(): Array[U8] val =>
     let output = recover trn Array[U8] end
     let frame_count = message.size()

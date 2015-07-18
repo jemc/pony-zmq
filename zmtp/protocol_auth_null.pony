@@ -68,7 +68,5 @@ class ProtocolAuthNull is Protocol
     (let success, let string) = _message_parser.read(buffer)
     if not success then _parent.protocol_error(peer, string) end
     
-    let message = _message_parser.message = recover trn Message end
-    _parent.received_message(peer, consume message)
-    
+    _parent.received_message(peer, _message_parser.take_message())
     _next_state(_ProtocolAuthNullStateReadMessage)
