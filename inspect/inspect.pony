@@ -1,16 +1,12 @@
 
 use "collections"
 
-type Inspectable is
-  ( Stringable box
-  | String box
-  | Array[U8] box
-  | Map[String, String])
+type _Inspectable is Any box
 
 primitive Inspect
-  fun apply(input: Inspectable): String val =>
+  fun apply(input: _Inspectable): String val =>
     """
-    Return a string with the inspect form of an Inspectable.
+    Return a string with the inspect form of an object.
     The resulting string is intended for human readability and debugging,
     and is subject to change as necessary to improve future readability.
     """
@@ -57,7 +53,7 @@ primitive Inspect
         end
       end
       output.push(']')
-    | let x: Map[String, String] box =>
+    | let x: Map[String, _Inspectable] box =>
       output.push('{')
       let iter = x.pairs()
       try
@@ -85,9 +81,9 @@ primitive Inspect
     """
     _STDOUT.write_line(string)
   
-  fun out(input: Inspectable) =>
+  fun out(input: _Inspectable) =>
     """
-    Print the inspect form of an Inspectable to the STDOUT stream.
+    Print the inspect form of an object to the STDOUT stream.
     This is for debugging purposes only, as it is not concurrency-safe.
     """
     print(apply(input))
