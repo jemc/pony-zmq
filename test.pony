@@ -24,13 +24,12 @@ class _TestEndpoint is UnitTest
   fun assert_tcp_from_uri(h: TestHelper,
     uri: String, host: String, port: String)
   =>
-    let subject' = try EndpointTCP.from_uri(uri) else
-      h.assert_failed("EndpointTCP failed to parse from URI: " + uri)
-    end
-    match subject' | let subject: EndpointTCP =>
+    try let subject = _EndpointParser.from_uri(uri) as EndpointTCP
       h.expect_eq[String](subject.host, host)
       h.expect_eq[String](subject.port, port)
       h.expect_eq[String](subject.to_uri(), uri)
+    else
+      h.assert_failed("failed to parse EndpointTCP from URI: " + uri)
     end
 
 class _TestZMTPClient is UnitTest

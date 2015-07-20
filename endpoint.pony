@@ -7,6 +7,12 @@ type Endpoint is
 
 primitive EndpointUnknown
 
+primitive _EndpointParser
+  fun from_uri(string: String): Endpoint ? =>
+    try EndpointTCP.from_uri(string) else
+      error
+    end
+
 class EndpointTCP val
   let schema: String = "tcp://"
   var host: String
