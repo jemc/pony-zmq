@@ -30,33 +30,31 @@ class _ClientConnection is TCPConnectionNotify // TODO: abstract away TCP types
   
   fun ref received(conn: TCPConnection ref, data: Array[U8] iso) =>
     _buffer.append(consume data)
-    _protocol.handle_input(conn, _buffer)
+    _protocol.handle_input(_buffer)
+    _handle_protocol_events(conn)
   
   ///
   // Private convenience methods
   
+  fun ref _handle_protocol_events(peer: _ClientPeer ref) =>
+    while true do
+      match _protocol.take_event()
+      | None => break
+      | ProtocolEventHandshakeComplete => _parent._connected(peer)
+      | let e: ProtocolEventError => _protocol_error(peer, e.string)
+      | let o: ProtocolOutput => peer.write(o)
+      | let m: Message => _parent._received(peer, m)
+      end
+    end
+  
   fun ref _reset(peer: _ClientPeer ref) =>
-    _protocol = ProtocolAuthNull.create(this, _socket_type)
-    _protocol.handle_start(peer)
+    _protocol = ProtocolAuthNull.create(_socket_type)
+    _protocol.handle_start()
     _buffer.clear()
   
-  ///
-  // Callback methods from protocol
-  
-  fun ref write(peer: _ClientPeer ref, data: Array[U8] val) =>
-    peer.write(data)
-  
-  fun protocol_error(peer: _ClientPeer ref, string: String) ? =>
+  fun _protocol_error(peer: _ClientPeer ref, string: String) =>
     _parent._protocol_error(peer, string)
     peer.dispose()
-    error
-  
-  fun handshake_complete(peer: _ClientPeer ref) =>
-    _parent._connected(peer)
-  
-  fun received_message(peer: _ClientPeer ref, message: Message) =>
-    _parent._received(peer, message)
-
 
 class _ClientListenerConnection is TCPListenNotify
   let _parent: Client tag
