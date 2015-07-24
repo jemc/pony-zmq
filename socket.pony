@@ -41,10 +41,14 @@ actor Socket
     end
   
   be connect(string: String) =>
-    _peers(string) = try _make_peer(string) else return end
+    try _peers(string) else
+      _peers(string) = try _make_peer(string) else return end
+    end
   
   be bind(string: String) =>
-    _binds(string) = try _make_bind(string) else return end
+    try _binds(string) else
+      _binds(string) = try _make_bind(string) else return end
+    end
   
   be _connected(peer: _SocketPeer) =>
     Inspect.print("_connected.")
