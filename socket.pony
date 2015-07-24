@@ -24,14 +24,20 @@ actor Socket
   
   fun box _make_peer(string: String): _SocketPeer? =>
     match _EndpointParser.from_uri(string)
-    | let e: EndpointTCP => TCPConnection(_SocketConnection(this, _socket_type), e.host, e.port)
-    else error
+    | let e: EndpointTCP => TCPConnection(_SocketConnection(this, _socket_type), "localhost", "8899")
+    | let e: EndpointUnknown => error
+    else
+      Inspect.out("failed to parse connect endpoint: "+string)
+      error
     end
   
   fun box _make_bind(string: String): _SocketBind? =>
     match _EndpointParser.from_uri(string)
-    | let e: EndpointTCP => TCPListener(_SocketListenerConnection(this, _socket_type), e.host, e.port)
-    else error
+    | let e: EndpointTCP => TCPListener(_SocketListenerConnection(this, _socket_type), "localhost", "8899")
+    | let e: EndpointUnknown => error
+    else
+      Inspect.out("failed to parse bind endpoint: "+string)
+      error
     end
   
   be connect(string: String) =>
