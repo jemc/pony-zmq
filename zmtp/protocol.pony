@@ -15,7 +15,7 @@ class ProtocolEventError val
   new val create(string': String) =>
     string = string'
 
-type ProtocolOutput is Array[U8] val
+type ProtocolOutput is Bytes
 
 interface Protocol
   fun ref handle_start()
