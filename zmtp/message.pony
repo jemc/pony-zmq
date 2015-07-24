@@ -2,7 +2,7 @@
 use "net"
 use "collections"
 
-type Frame is Array[U8] val
+type Frame is ReadSeq[U8] val
 type Message is List[Frame] val
 
 class _MessageParser
