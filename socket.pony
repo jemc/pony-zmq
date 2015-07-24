@@ -15,18 +15,30 @@ type _SocketPeer is _SocketPeerInterface tag
 type _SocketBind is _SocketBindInterface tag
 
 actor Socket
-  let _peers: List[_SocketPeer] = _peers.create()
-  let _binds: List[_SocketBind] = _binds.create()
+  let _peers: Map[String, _SocketPeer] = _peers.create()
+  let _binds: Map[String, _SocketBind] = _binds.create()
   let _socket_type: String
   
   new create(socket_type: String) =>
     _socket_type = socket_type
   
-  be connect(host: String, port: String) =>
-    _peers.push(TCPConnection(_SocketConnection(this, _socket_type), host, port))
+  fun box _make_peer(string: String): _SocketPeer? =>
+    match _EndpointParser.from_uri(string)
+    | let e: EndpointTCP => TCPConnection(_SocketConnection(this, _socket_type), e.host, e.port)
+    else error
+    end
   
-  be bind(host: String, port: String) =>
-    _binds.push(TCPListener(_SocketListenerConnection(this, _socket_type), host, port))
+  fun box _make_bind(string: String): _SocketBind? =>
+    match _EndpointParser.from_uri(string)
+    | let e: EndpointTCP => TCPListener(_SocketListenerConnection(this, _socket_type), e.host, e.port)
+    else error
+    end
+  
+  be connect(string: String) =>
+    _peers(string) = try _make_peer(string) else return end
+  
+  be bind(string: String) =>
+    _binds(string) = try _make_bind(string) else return end
   
   be _connected(peer: _SocketPeer) =>
     Inspect.print("_connected.")
@@ -44,11 +56,9 @@ actor Socket
     end
   
   be _bind_closed(bind': _SocketBind) =>
-    for node in _binds.nodes() do
-      try let other = node.apply()
-        if other is bind' then
-          other.dispose()
-          node.remove()
-        end
+    for (key, other) in _binds.pairs() do
+      if other is bind' then
+        other.dispose()
+        try _binds.remove(key) end
       end
     end

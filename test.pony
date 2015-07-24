@@ -40,5 +40,5 @@ class _TestSocket is UnitTest
   fun apply(h: TestHelper): TestResult =>
     let a = Socket("PULL")
     // a.connect("localhost", "8899")
-    a.bind("localhost", "8899")
+    a.bind("tcp://localhost:8899")
     true
