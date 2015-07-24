@@ -6,7 +6,7 @@ actor Main
   new create(env: Env) =>
     let test = PonyTest(env)
     test(_TestEndpoint(env))
-    test(_TestZMTPClient(env))
+    test(_TestSocket(env))
     test.complete()
 
 class _TestEndpoint is UnitTest
@@ -32,13 +32,13 @@ class _TestEndpoint is UnitTest
       h.assert_failed("failed to parse EndpointTCP from URI: " + uri)
     end
 
-class _TestZMTPClient is UnitTest
+class _TestSocket is UnitTest
   let _env: Env
   new iso create(env: Env) => _env = env
-  fun name(): String => "pony-zmq/zmtp/Client"
+  fun name(): String => "pony-zmq/Socket"
   
   fun apply(h: TestHelper): TestResult =>
-    let a = zmtp.Client("PULL")
+    let a = Socket("PULL")
     // a.connect("localhost", "8899")
     a.bind("localhost", "8899")
     true

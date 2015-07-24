@@ -1,15 +1,16 @@
 
 use "net"
 use "collections"
+use zmtp = "zmtp"
 
-class _ClientConnection is TCPConnectionNotify // TODO: abstract away TCP types
-  let _parent: Client tag
+class _SocketConnection is TCPConnectionNotify // TODO: abstract away TCP types
+  let _parent: Socket tag
   let _socket_type: String val
   
   let _buffer: Buffer = Buffer
-  var _protocol: Protocol = ProtocolNone
+  var _protocol: zmtp.Protocol = zmtp.ProtocolNone
   
-  new iso create(parent: Client, socket_type: String) =>
+  new iso create(parent: Socket, socket_type: String) =>
     _parent = parent
     _socket_type = socket_type
   
@@ -36,33 +37,33 @@ class _ClientConnection is TCPConnectionNotify // TODO: abstract away TCP types
   ///
   // Private convenience methods
   
-  fun ref _handle_protocol_events(peer: _ClientPeer ref) =>
+  fun ref _handle_protocol_events(peer: _SocketPeer ref) =>
     while true do
       match _protocol.take_event()
       | None => break
-      | ProtocolEventHandshakeComplete => _parent._connected(peer)
-      | let e: ProtocolEventError => _protocol_error(peer, e.string)
-      | let o: ProtocolOutput => peer.write(o)
-      | let m: Message => _parent._received(peer, m)
+      | zmtp.ProtocolEventHandshakeComplete => _parent._connected(peer)
+      | let e: zmtp.ProtocolEventError => _protocol_error(peer, e.string)
+      | let o: zmtp.ProtocolOutput => peer.write(o)
+      | let m: zmtp.Message => _parent._received(peer, m)
       end
     end
   
-  fun ref _reset(peer: _ClientPeer ref) =>
-    _protocol = ProtocolAuthNull.create(_socket_type)
+  fun ref _reset(peer: _SocketPeer ref) =>
+    _protocol = zmtp.ProtocolAuthNull.create(_socket_type)
     _protocol.handle_start()
     _buffer.clear()
   
-  fun _protocol_error(peer: _ClientPeer ref, string: String) =>
+  fun _protocol_error(peer: _SocketPeer ref, string: String) =>
     _parent._protocol_error(peer, string)
     peer.dispose()
 
-class _ClientListenerConnection is TCPListenNotify
-  let _parent: Client tag
+class _SocketListenerConnection is TCPListenNotify
+  let _parent: Socket tag
   let _socket_type: String val
   
-  new iso create(parent: Client, socket_type: String) =>
+  new iso create(parent: Socket, socket_type: String) =>
     _parent = parent
     _socket_type = socket_type
   
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
-    _ClientConnection(_parent, _socket_type)
+    _SocketConnection(_parent, _socket_type)
