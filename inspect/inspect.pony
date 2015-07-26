@@ -13,7 +13,6 @@ primitive Inspect
     let output: String trn = recover String end
     
     match input
-    | let x: Stringable box => output.append(x.string())
     | let x: String box =>
       output.push('"')
       let iter = x.values()
@@ -53,6 +52,16 @@ primitive Inspect
         end
       end
       output.push(']')
+    | let x: ReadSeq[ReadSeq[U8]] box =>
+      output.push('[')
+      let iter = x.values()
+      try
+        while iter.has_next() do
+          output.append(apply(iter.next()))
+          if iter.has_next() then output.append(", ") end
+        end
+      end
+      output.push(']')
     | let x: Map[String, _Inspectable] box =>
       output.push('{')
       let iter = x.pairs()
@@ -68,8 +77,9 @@ primitive Inspect
         end
       end
       output.push('}')
+    | let x: Stringable box => output.append(x.string())
     else
-      "<uninspectable>"
+      return "<uninspectable>"
     end
     
     output
