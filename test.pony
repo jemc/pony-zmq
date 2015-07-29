@@ -48,10 +48,48 @@ class _TestSocket is UnitTest
   fun name(): String => "pony-zmq/Socket"
   
   fun apply(h: TestHelper): TestResult =>
-    let a = Socket("PAIR", lambda(m: Message) => Inspect.print("a got: " + Inspect(m)) end)
-    let b = Socket("PAIR", lambda(m: Message) => Inspect.print("b got: " + Inspect(m)) end)
+    let bucket = _ExpectationBucket(h, 2)
+    let a = Socket("PAIR", _SocketExpectation(h, bucket, "bar"))
+    let b = Socket("PAIR", _SocketExpectation(h, bucket, "foo"))
     a.bind("tcp://localhost:8899")
     b.connect("tcp://localhost:8899")
     a.send_string("foo")
     b.send_string("bar")
     LongTest
+
+actor _ExpectationBucket
+  let _h: TestHelper
+  var _count: U64
+  
+  new create(h: TestHelper, count: U64) =>
+    _h = h
+    _count = count
+  
+  be reduce(diff: U64 = 1) =>
+    _count = _count - diff
+    if _count <= 0 then _h.complete(true) end
+
+class _SocketExpectation is SocketNotify
+  let _h: TestHelper
+  let _bucket: _ExpectationBucket
+  let _message: Message trn
+  
+  new iso create(h: TestHelper, bucket: _ExpectationBucket, string: String) =>
+    _h = h
+    _bucket = bucket
+    _message = recover Message.push(string) end
+  
+  fun ref received(socket: Socket, message: Message) =>
+    try
+      _h.assert_eq[U64](message.size(), _message.size())
+      var i: U64 = 0
+      var j: U64 = 0
+      for frame in message.values() do
+        for byte in frame.values() do
+          _h.assert_eq[U8](byte, _message(i)(j))
+          j = j + 1
+        end
+        i = i + 1
+      end
+    end
+    _bucket.reduce()

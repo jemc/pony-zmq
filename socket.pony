@@ -12,7 +12,7 @@ interface _SocketBind tag
   be dispose()
 
 actor Socket
-  let _notify: SocketSimpleNotify
+  let _notify: SocketNotify ref
   
   let _peers:      Map[String, _SocketPeer]              = _peers.create()
   let _binds:      Map[String, _SocketBind]              = _binds.create()
@@ -24,7 +24,7 @@ actor Socket
   
   let _socket_type: String
   
-  new create(socket_type: String, notify: SocketSimpleNotify = SocketSimpleNotifyNone) =>
+  new create(socket_type: String, notify: SocketNotify = SocketNotifyNone) =>
     _socket_type = socket_type
     _notify = consume notify
   
@@ -72,7 +72,7 @@ actor Socket
     _maybe_send_messages()
   
   be _received(peer: _SocketPeer, message: Message) =>
-    _notify(message)
+    _notify.received(this, consume message)
   
   be _connected_from_bind(bind': _SocketBind, peer: _SocketPeer) =>
     (try _bind_peers(bind') else
