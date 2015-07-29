@@ -15,7 +15,7 @@ class ProtocolAuthNull is Protocol
   let _socket_type: String val
   
   var _state: _ProtocolAuthNullState = _ProtocolAuthNullStateReadGreeting
-  let _message_parser: _MessageParser = _MessageParser
+  let _message_parser: MessageParser = MessageParser
   let _events: List[ProtocolEvent] = List[ProtocolEvent]
   
   new create(socket_type: String val) =>

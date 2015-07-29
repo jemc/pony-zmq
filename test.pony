@@ -1,6 +1,6 @@
 
 use "ponytest"
-use zmtp = "zmtp"
+use "./inspect"
 
 actor Main
   new create(env: Env) =>
@@ -48,7 +48,10 @@ class _TestSocket is UnitTest
   fun name(): String => "pony-zmq/Socket"
   
   fun apply(h: TestHelper): TestResult =>
-    let a = Socket("PULL")
-    // a.connect("localhost", "8899")
+    let a = Socket("PAIR", lambda(m: Message) => Inspect.print("a got: " + Inspect(m)) end)
+    let b = Socket("PAIR", lambda(m: Message) => Inspect.print("b got: " + Inspect(m)) end)
     a.bind("tcp://localhost:8899")
-    true
+    b.connect("tcp://localhost:8899")
+    a.send_string("foo")
+    b.send_string("bar")
+    LongTest

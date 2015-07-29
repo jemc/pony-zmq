@@ -5,16 +5,16 @@ use "collections"
 type Frame is ReadSeq[U8] val
 type Message is List[Frame] val
 
-class _MessageParser
-  var message: Message trn = recover Message end
+class MessageParser
+  var _message: Message trn = recover Message end
   
   fun ref take_message(): Message trn^ =>
     """
     Transfer ownership of the current message to the caller and start a new one.
     """
-    message = recover Message end
+    _message = recover Message end
   
-  fun write(): Array[U8] val =>
+  fun tag write(message: Message box): Array[U8] val =>
     let output = recover trn Array[U8] end
     let frame_count = message.size()
     
@@ -61,7 +61,7 @@ class _MessageParser
       
       // Read the frame body and append it to the ongoing message.
       let frame = buffer.block(size)
-      message.push(consume frame)
+      _message.push(consume frame)
       
       // Get has_more flag from ident byte
       has_more = (0 != (ident and 0x01))
