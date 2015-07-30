@@ -1,6 +1,7 @@
 
 use "ponytest"
-use "./inspect"
+use ".."
+use "../inspect"
 
 actor Main
   new create(env: Env) =>
