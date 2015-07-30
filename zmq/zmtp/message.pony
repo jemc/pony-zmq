@@ -1,10 +1,11 @@
 
 use "net"
 use "collections"
+use "../inspect"
 
 type Frame is ReadSeq[U8] val
 
-class Message val is Seq[Frame]
+class Message val is Stringable, Comparable[Message box], Seq[Frame]
   let _inner: List[Frame] = _inner.create()
   new create(len: U64 = 0) => None
   
@@ -26,6 +27,26 @@ class Message val is Seq[Frame]
   fun rnodes():  ListNodes[Frame, this->ListNode[Frame]]^  => _inner.rnodes()
   fun values():  ListValues[Frame, this->ListNode[Frame]]^ => _inner.values()
   fun rvalues(): ListValues[Frame, this->ListNode[Frame]]^ => _inner.rvalues()
+  
+  fun eq(that: Message box): Bool =>
+    if size() != that.size() then return false end
+    try for i in Range(0, size()-1) do
+      if not _frame_eq(this(i), that(i)) then return false end
+    end else return false end
+    true
+  
+  fun tag _frame_eq(a: Frame, b: Frame): Bool =>
+    if a.size() != b.size() then return false end
+    try for i in Range(0, a.size()-1) do
+      if a(i) != b(i) then return false end
+    end else return false end
+    true
+  
+  fun inspect(): String => Inspect(this)
+  
+  fun string(fmt: FormatDefault = FormatDefault,
+    prefix: PrefixDefault = PrefixDefault, prec: U64 = -1, width: U64 = 0,
+    align: Align = AlignLeft, fill: U32 = ' '): String iso^ => inspect().clone()
 
 class MessageParser
   var _message: Message trn = recover Message end
