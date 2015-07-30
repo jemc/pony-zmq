@@ -7,7 +7,10 @@ actor _SocketPeerTCP
   let _socket_type: String
   let _endpoint: EndpointTCP
   var _inner: (TCPConnection | None) = None
-  var _active: Bool
+  
+  var _active: Bool = false
+  var _disposed: Bool = false
+  
   let _messages: _MessageQueue = _MessageQueue
   
   var _reconnect_timer: (Timer tag | None) = None
@@ -17,7 +20,6 @@ actor _SocketPeerTCP
     _parent = parent
     _socket_type = socket_type
     _endpoint = endpoint
-    _active = false
     _inner = TCPConnection(_SocketTCPNotify(this, _socket_type),
                            _endpoint.host, _endpoint.port)
   
@@ -25,8 +27,10 @@ actor _SocketPeerTCP
     try (_inner as TCPConnection).dispose() end
     _inner = None
     _active = false
+    _disposed = true
   
   be protocol_error(string: String) =>
+    _active = false
     reconnect_later()
     _parent._protocol_error(this, string)
   
@@ -37,9 +41,11 @@ actor _SocketPeerTCP
     _messages.flush(conn)
   
   be closed() =>
-    reconnect_now()
+    _active = false
+    if not _disposed then reconnect_now() end
   
   be connect_failed() =>
+    _active = false
     reconnect_later()
   
   be received(message: Message) =>
@@ -49,20 +55,18 @@ actor _SocketPeerTCP
     _messages.send(message, _inner, _active)
   
   fun ref reconnect_now() =>
-    _active = false
     try (_inner as TCPConnection).dispose() end
     _inner = TCPConnection(_SocketTCPNotify(this, _socket_type),
                            _endpoint.host, _endpoint.port)
   
   fun ref reconnect_later() =>
-    _active = false
     try (_inner as TCPConnection).dispose() end
     _inner = None
     _parent.set_timer(
       Timer(_ReconnectTimerNotify(this), _reconnect_ivl, _reconnect_ivl))
   
   be _reconnect_timer_fire() =>
-    if not _active then
+    if not _active and not _disposed then
       _inner = TCPConnection(_SocketTCPNotify(this, _socket_type),
                              _endpoint.host, _endpoint.port)
     end

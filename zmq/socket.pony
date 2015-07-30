@@ -28,6 +28,20 @@ actor Socket
     _socket_type = socket_type
     _notify = consume notify
   
+  be dispose() =>
+    _timers.dispose()
+    for peer in _peers.values() do
+      peer.dispose()
+    end
+    for peer in _binds.values() do
+      peer.dispose()
+    end
+    for peers in _bind_peers.values() do
+      for peer in peers.values() do
+        peer.dispose()
+      end
+    end
+  
   fun box _make_peer(string: String): _SocketPeer? =>
     match _EndpointParser.from_uri(string)
     | let e: EndpointTCP => _SocketPeerTCP(this, _socket_type, e)
