@@ -41,6 +41,7 @@ actor Socket
         peer.dispose()
       end
     end
+    _notify.closed(this)
   
   fun box _make_peer(string: String): _SocketPeer? =>
     match EndpointParser.from_uri(string)
