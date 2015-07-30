@@ -8,8 +8,8 @@ class SocketTest is UnitTest
   fun name(): String => "zmq.Socket"
   
   fun apply(h: TestHelper): TestResult =>
-    let ra = _SocketReactor; let a = zmq.Socket("PAIR", ra.notify())
-    let rb = _SocketReactor; let b = zmq.Socket("PAIR", rb.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.PAIR, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.PAIR, rb.notify())
     
     a.bind("tcp://localhost:8899")
     b.connect("tcp://localhost:8899")

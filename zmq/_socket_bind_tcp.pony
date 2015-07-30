@@ -4,7 +4,7 @@ use "net"
 
 actor _SocketBindTCP
   var _inner: TCPListener
-  new create(parent: Socket, socket_type: String, endpoint: EndpointTCP) =>
+  new create(parent: Socket, socket_type: SocketType, endpoint: EndpointTCP) =>
     _inner = TCPListener(_SocketBindTCPListenNotify(parent, socket_type),
                          endpoint.host, endpoint.port)
   be dispose() =>
@@ -12,9 +12,9 @@ actor _SocketBindTCP
 
 class _SocketBindTCPListenNotify is TCPListenNotify
   let _parent: Socket
-  let _socket_type: String
+  let _socket_type: SocketType
   
-  new iso create(parent: Socket, socket_type: String) =>
+  new iso create(parent: Socket, socket_type: SocketType) =>
     _parent = parent
     _socket_type = socket_type
     

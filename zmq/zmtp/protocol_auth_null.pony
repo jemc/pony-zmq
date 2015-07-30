@@ -11,14 +11,18 @@ type _ProtocolAuthNullState is
   | _ProtocolAuthNullStateReadHandshakeReady
   | _ProtocolAuthNullStateReadMessage)
 
+interface SocketType val
+  fun string(): String
+  fun accepts(other: String): Bool
+
 class ProtocolAuthNull is Protocol
-  let _socket_type: String val
+  let _socket_type: SocketType
   
   var _state: _ProtocolAuthNullState = _ProtocolAuthNullStateReadGreeting
   let _message_parser: MessageParser = MessageParser
   let _events: List[ProtocolEvent] = List[ProtocolEvent]
   
-  new create(socket_type: String val) =>
+  new create(socket_type: SocketType) =>
     _socket_type = socket_type
   
   fun ref _next_state(state: _ProtocolAuthNullState) =>
@@ -56,7 +60,7 @@ class ProtocolAuthNull is Protocol
   
   fun ref _write_ready_command() =>
     let command = _CommandAuthNullReady
-    command.metadata.update("Socket-Type", _socket_type)
+    command.metadata.update("Socket-Type", _socket_type.string())
     _events.push(_CommandParser.write(command))
   
   fun ref _read_ready_command(buffer: Buffer ref) ? =>

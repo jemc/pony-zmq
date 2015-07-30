@@ -4,7 +4,7 @@ use "net"
 
 actor _SocketPeerTCP
   let _parent: Socket
-  let _socket_type: String
+  let _socket_type: SocketType
   let _endpoint: EndpointTCP
   var _inner: (TCPConnection | None) = None
   
@@ -16,7 +16,7 @@ actor _SocketPeerTCP
   var _reconnect_timer: (Timer tag | None) = None
   let _reconnect_ivl: U64 = 500000000 // 500 ms
   
-  new create(parent: Socket, socket_type: String, endpoint: EndpointTCP) =>
+  new create(parent: Socket, socket_type: SocketType, endpoint: EndpointTCP) =>
     _parent = parent
     _socket_type = socket_type
     _endpoint = endpoint

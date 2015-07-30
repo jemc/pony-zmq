@@ -22,9 +22,9 @@ actor Socket
   let _timers:   Timers        = _timers.create()
   let _outgoing: List[Message] = _outgoing.create()
   
-  let _socket_type: String
+  let _socket_type: SocketType
   
-  new create(socket_type: String, notify: SocketNotify = SocketNotifyNone) =>
+  new create(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone) =>
     _socket_type = socket_type
     _notify = consume notify
   
