@@ -51,15 +51,30 @@ class _TestSocket is UnitTest
     let bucket = _ExpectationBucket(h, 2)
     let a = Socket("PAIR", _SocketExpectation(h, bucket, "bar"))
     let b = Socket("PAIR", _SocketExpectation(h, bucket, "foo"))
+    
     a.bind("tcp://localhost:8899")
     b.connect("tcp://localhost:8899")
     a.send_string("foo")
     b.send_string("bar")
+    
+    bucket.next(recover lambda(h: TestHelper, a: Socket, b: Socket) =>
+      a.dispose()
+      b.dispose()
+      h.complete(true)
+    end~apply(h,a,b) end)
+    
     LongTest
+
+interface _LambdaPartial iso
+  fun ref apply() => None
+
+class _LambdaPartialNone is _LambdaPartial
+  new iso create() => None
 
 actor _ExpectationBucket
   let _h: TestHelper
   var _count: U64
+  var _next: _LambdaPartial = _LambdaPartialNone
   
   new create(h: TestHelper, count: U64) =>
     _h = h
@@ -67,7 +82,16 @@ actor _ExpectationBucket
   
   be reduce(diff: U64 = 1) =>
     _count = _count - diff
-    if _count <= 0 then _h.complete(true) end
+    if is_complete() then
+      _h.complete(true)
+      _next.apply()
+      _next = _LambdaPartialNone
+    end
+  
+  be next(func: _LambdaPartial) =>
+    if is_complete() then (consume func)() else _next = consume func end
+  
+  fun is_complete(): Bool => _count <= 0
 
 class _SocketExpectation is SocketNotify
   let _h: TestHelper
