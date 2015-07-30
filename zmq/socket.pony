@@ -81,7 +81,6 @@ actor Socket
     Inspect.print("_protocol_error: " + string)
   
   be _connected(peer: _SocketPeer) =>
-    Inspect.print("_connected.")
     _add_open_peer(peer)
     _maybe_send_messages()
   
