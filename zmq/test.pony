@@ -27,7 +27,7 @@ class _TestEndpoint is UnitTest
   fun assert_tcp_from_uri(h: TestHelper,
     uri: String, host: String, port: String)
   =>
-    match _EndpointParser.from_uri(uri) | let subject: EndpointTCP =>
+    match EndpointParser.from_uri(uri) | let subject: EndpointTCP =>
       h.expect_eq[String](subject.host, host)
       h.expect_eq[String](subject.port, port)
       h.expect_eq[String](subject.to_uri(), uri)
@@ -36,7 +36,7 @@ class _TestEndpoint is UnitTest
     end
   
   fun assert_unknown_from_uri(h: TestHelper, uri: String) =>
-    match _EndpointParser.from_uri(uri) | let subject: EndpointUnknown =>
+    match EndpointParser.from_uri(uri) | let subject: EndpointUnknown =>
       h.expect_eq[String](subject.to_uri(), uri)
     else
       h.assert_failed("failed to parse EndpointUnknown from URI: " + uri)

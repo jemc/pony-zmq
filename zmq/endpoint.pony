@@ -5,7 +5,7 @@ type Endpoint is
   ( EndpointUnknown
   | EndpointTCP)
 
-primitive _EndpointParser
+primitive EndpointParser
   fun from_uri(string: String): Endpoint =>
     try EndpointTCP.from_uri(string) else
       EndpointUnknown.from_uri(string)

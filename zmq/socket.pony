@@ -43,7 +43,7 @@ actor Socket
     end
   
   fun box _make_peer(string: String): _SocketPeer? =>
-    match _EndpointParser.from_uri(string)
+    match EndpointParser.from_uri(string)
     | let e: EndpointTCP => _SocketPeerTCP(this, _socket_type, e)
     | let e: EndpointUnknown => error
     else
@@ -52,7 +52,7 @@ actor Socket
     end
   
   fun box _make_bind(string: String): _SocketBind? =>
-    match _EndpointParser.from_uri(string)
+    match EndpointParser.from_uri(string)
     | let e: EndpointTCP => _SocketBindTCP(this, _socket_type, e)
     | let e: EndpointUnknown => error
     else
