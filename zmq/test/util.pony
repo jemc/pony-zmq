@@ -1,56 +1,51 @@
 
-use "ponytest"
+use "collections"
 use zmq = ".."
 
 interface _LambdaPartial iso
   fun ref apply() => None
 
-class _LambdaPartialNone is _LambdaPartial
-  new iso create() => None
+interface _MessageLambdaPartial iso
+  fun ref apply(message: zmq.Message) => None
 
-actor _ExpectationBucket
-  let _h: TestHelper
-  var _count: U64
-  var _next: _LambdaPartial = _LambdaPartialNone
+actor _SocketReactor
+  let _messages: List[zmq.Message]           = _messages.create()
+  let _handlers: List[_MessageLambdaPartial] = _handlers.create()
   
-  new create(h: TestHelper, count: U64) =>
-    _h = h
-    _count = count
+  var _closed_handler: (_LambdaPartial | None) = None
+  var _closed:             Bool = false
+  var _ran_closed_handler: Bool = false
   
-  be reduce(diff: U64 = 1) =>
-    _count = _count - diff
-    if is_complete() then
-      _h.complete(true)
-      _next.apply()
-      _next = _LambdaPartialNone
-    end
+  fun tag notify(): zmq.SocketNotify^ =>
+    zmq.SocketNotifyActor(this)
   
-  be next(func: _LambdaPartial) =>
-    if is_complete() then (consume func)() else _next = consume func end
+  be next(handler: _MessageLambdaPartial) =>
+    _handlers.push(consume handler)
+    maybe_run_handlers()
   
-  fun is_complete(): Bool => _count <= 0
-
-class _SocketExpectation is zmq.SocketNotify
-  let _h: TestHelper
-  let _bucket: _ExpectationBucket
-  let _message: zmq.Message trn
+  be received(socket: zmq.Socket, message: zmq.Message) =>
+    _messages.push(message)
+    maybe_run_handlers()
   
-  new iso create(h: TestHelper, bucket: _ExpectationBucket, string: String) =>
-    _h = h
-    _bucket = bucket
-    _message = recover zmq.Message.push(string) end
+  be when_closed(handler: _LambdaPartial) =>
+    _closed_handler = consume handler
+    maybe_run_closed_handler()
   
-  fun ref received(socket: zmq.Socket, message: zmq.Message) =>
+  be closed(socket: zmq.Socket) =>
+    _closed = true
+    maybe_run_closed_handler()
+  
+  fun ref maybe_run_handlers() =>
     try
-      _h.assert_eq[U64](message.size(), _message.size())
-      var i: U64 = 0
-      var j: U64 = 0
-      for frame in message.values() do
-        for byte in frame.values() do
-          _h.assert_eq[U8](byte, _message(i)(j))
-          j = j + 1
-        end
-        i = i + 1
+      while (_handlers.size() > 0) and (_messages.size() > 0) do
+        _handlers.shift()(_messages.shift())
       end
     end
-    _bucket.reduce()
+  
+  fun ref maybe_run_closed_handler() =>
+    if _closed and not _ran_closed_handler then
+      try
+        (_closed_handler as _LambdaPartial).apply()
+        _ran_closed_handler = true
+      end
+    end

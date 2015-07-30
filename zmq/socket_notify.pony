@@ -1,9 +1,6 @@
 
 use zmtp = "zmtp"
 
-class SocketNotifyNone iso is SocketNotify
-  new iso create() => None
-
 interface SocketNotify iso
   fun ref sent(socket: Socket, message: zmtp.Message): zmtp.Message ? =>
     """
@@ -24,3 +21,18 @@ interface SocketNotify iso
     Called when the socket is closed.
     """
     None
+
+class SocketNotifyNone iso is SocketNotify
+  new iso create() => None
+
+interface _SocketNotifiableActor tag
+  be received(socket: Socket, message: Message) => None
+  be closed(socket: Socket) => None
+
+class SocketNotifyActor iso is SocketNotify
+  let _parent: _SocketNotifiableActor
+  new iso create(parent: _SocketNotifiableActor) => _parent = parent
+  
+  fun ref received(s: Socket, m: Message) => _parent.received(s, m)
+  fun ref closed(s: Socket) => _parent.closed(s)
+

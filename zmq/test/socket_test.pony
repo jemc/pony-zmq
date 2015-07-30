@@ -8,19 +8,28 @@ class SocketTest is UnitTest
   fun name(): String => "zmq.Socket"
   
   fun apply(h: TestHelper): TestResult =>
-    let bucket = _ExpectationBucket(h, 2)
-    let a = zmq.Socket("PAIR", _SocketExpectation(h, bucket, "bar"))
-    let b = zmq.Socket("PAIR", _SocketExpectation(h, bucket, "foo"))
+    let ra = _SocketReactor; let a = zmq.Socket("PAIR", ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket("PAIR", rb.notify())
     
     a.bind("tcp://localhost:8899")
     b.connect("tcp://localhost:8899")
     a.send_string("foo")
     b.send_string("bar")
     
-    bucket.next(recover lambda(h: TestHelper, a: zmq.Socket, b: zmq.Socket) =>
-      a.dispose()
-      b.dispose()
-      h.complete(true)
-    end~apply(h,a,b) end)
+    ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+      s.dispose()
+    end~apply(h,a) end)
+    
+    rb.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+      s.dispose()
+    end~apply(h,b) end)
+    
+    ra.when_closed(recover lambda(h: TestHelper, rb: _SocketReactor) =>
+      rb.when_closed(recover lambda(h: TestHelper) =>
+        h.complete(true)
+      end~apply(h) end)
+    end~apply(h,rb) end)
     
     LongTest
