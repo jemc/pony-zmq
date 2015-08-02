@@ -3,8 +3,7 @@ use "ponytest"
 use zmq = ".."
 
 class SocketTest is UnitTest
-  let _env: Env
-  new iso create(env: Env) => _env = env
+  new iso create() => None
   fun name(): String => "zmq.Socket"
   
   fun apply(h: TestHelper): TestResult =>
