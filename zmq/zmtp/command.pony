@@ -21,7 +21,7 @@ class _CommandUtil
         let value_size = U64.from[U32](buffer.u32_be())
         value.append(buffer.block(value_size))
         
-        metadata.update(consume key, consume value)
+        metadata(consume key) = consume value
       end
     end
   

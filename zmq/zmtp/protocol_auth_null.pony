@@ -57,7 +57,7 @@ class ProtocolAuthNull is Protocol
   
   fun ref _write_ready_command() =>
     let command = _CommandAuthNullReady
-    command.metadata.update("Socket-Type", _socket_type.string())
+    command.metadata("Socket-Type") = _socket_type.string()
     _session.write(_CommandParser.write(command))
   
   fun ref _read_ready_command(buffer: _Buffer ref) ? =>
