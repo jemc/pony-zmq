@@ -16,13 +16,14 @@ interface SocketType val
   fun accepts(other: String): Bool
 
 class ProtocolAuthNull is Protocol
+  let _session: Session
   let _socket_type: SocketType
   
   var _state: _ProtocolAuthNullState = _ProtocolAuthNullStateReadGreeting
   let _message_parser: MessageParser = MessageParser
-  let _events: List[ProtocolEvent] = List[ProtocolEvent]
   
-  new create(socket_type: SocketType) =>
+  new create(session: Session, socket_type: SocketType) =>
+    _session = session
     _socket_type = socket_type
   
   fun ref _next_state(state: _ProtocolAuthNullState) =>
@@ -41,15 +42,12 @@ class ProtocolAuthNull is Protocol
     _next_state(_ProtocolAuthNullStateReadGreeting)
     _write_greeting()
   
-  fun ref take_event(): (ProtocolEvent | None) =>
-    try _events.shift() end
-  
   fun ref _protocol_error(string: String)? =>
-    _events.push(ProtocolEventError(string))
+    _session.protocol_error(string)
     error
   
   fun ref _write_greeting() =>
-    _events.push(_Greeting.write())
+    _session.write(_Greeting.write())
   
   fun ref _read_greeting(buffer: Buffer ref) ? =>
     (let success, let string) = _Greeting.read(buffer)
@@ -61,7 +59,7 @@ class ProtocolAuthNull is Protocol
   fun ref _write_ready_command() =>
     let command = _CommandAuthNullReady
     command.metadata.update("Socket-Type", _socket_type.string())
-    _events.push(_CommandParser.write(command))
+    _session.write(_CommandParser.write(command))
   
   fun ref _read_ready_command(buffer: Buffer ref) ? =>
     let command = _CommandAuthNullReady
@@ -71,12 +69,12 @@ class ProtocolAuthNull is Protocol
     // TODO: verify valid socket type in metadata
     let other_socket_type = try command.metadata("Socket-Type") else "" end
     
-    _events.push(ProtocolEventHandshakeComplete)
+    _session.activated()
     _next_state(_ProtocolAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: Buffer ref) ? =>
     (let success, let string) = _message_parser.read(buffer)
     if not success then _protocol_error(string) end
     
-    _events.push(_message_parser.take_message())
+    _session.received(_message_parser.take_message())
     _next_state(_ProtocolAuthNullStateReadMessage)
