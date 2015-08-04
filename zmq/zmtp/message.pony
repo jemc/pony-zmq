@@ -5,7 +5,7 @@ use "../inspect"
 
 type Frame is ReadSeq[U8] val
 
-class Message val is Stringable, Comparable[Message box], Seq[Frame]
+class Message val is (Stringable & Comparable[Message box] & Seq[Frame])
   let _inner: List[Frame] = _inner.create()
   new create(len: U64 = 0) => None
   
