@@ -1,6 +1,4 @@
 
-use "collections"
-
 primitive _ProtocolAuthNullStateReadGreeting
 primitive _ProtocolAuthNullStateReadHandshakeReady
 primitive _ProtocolAuthNullStateReadMessage
