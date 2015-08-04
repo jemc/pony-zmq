@@ -12,6 +12,23 @@ class Z85Test is UnitTest
       0x86, 0x4F, 0xD2, 0x6F, 0xB5, 0x59, 0xF7, 0x5B
     ] end)
     
+    // Examples of encoded string size not divisible by 5
+    test_decode_error(h, "HelloWorlds")
+    test_decode_error(h, "HelloWorl")
+    
+    // Examples of illegal characters in encoded string
+    test_decode_error(h, "Hello Z85!")
+    test_decode_error(h, "Hello\nZ85!")
+    test_decode_error(h, "Hello\x7FZ85!")
+    
+    // Examples of binary size not divisible by 4
+    test_encode_error(h, recover [as U8:
+      0x86, 0x4F, 0xD2, 0x6F, 0xB5, 0x59, 0xF7, 0x5B, 0x01
+    ] end)
+    test_encode_error(h, recover [as U8:
+      0x86, 0x4F, 0xD2, 0x6F, 0xB5, 0x59, 0xF7
+    ] end)
+    
     // Example client public key from `man curve_zmq`.
     test_pair(h, "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID", recover [as U8:
       0xBB, 0x88, 0x47, 0x1D, 0x65, 0xE2, 0x65, 0x9B,
@@ -50,5 +67,17 @@ class Z85Test is UnitTest
     end
     try h.expect_eq[String](Z85.decode(str), recover String.append(bin) end)
     else h.assert_failed("expected to be able to Z85-decode from string: "+str)
+    end
+    true
+  
+  fun test_decode_error(h: TestHelper, str: String): TestResult =>
+    try Z85.decode(str)
+      h.assert_failed("expected NOT to be able to Z85-decode from string: "+str)
+    end
+    true
+  
+  fun test_encode_error(h: TestHelper, bin: Array[U8] val): TestResult =>
+    try Z85.encode(bin)
+      h.assert_failed("expected NOT to be able to Z85-encode the binary.")
     end
     true
