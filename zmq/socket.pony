@@ -1,7 +1,6 @@
 
 use "collections"
 use "time"
-use "net"
 use "./inspect"
 
 interface _SocketPeer tag

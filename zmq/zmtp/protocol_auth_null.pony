@@ -1,5 +1,4 @@
 
-use "net"
 use "collections"
 
 primitive _ProtocolAuthNullStateReadGreeting
@@ -29,7 +28,7 @@ class ProtocolAuthNull is Protocol
   fun ref _next_state(state: _ProtocolAuthNullState) =>
     _state = state
   
-  fun ref handle_input(buffer: Buffer ref) =>
+  fun ref handle_input(buffer: _Buffer ref) =>
     try while true do
       match _state
       | _ProtocolAuthNullStateReadGreeting       => _read_greeting(buffer)
@@ -49,7 +48,7 @@ class ProtocolAuthNull is Protocol
   fun ref _write_greeting() =>
     _session.write(_Greeting.write())
   
-  fun ref _read_greeting(buffer: Buffer ref) ? =>
+  fun ref _read_greeting(buffer: _Buffer ref) ? =>
     (let success, let string) = _Greeting.read(buffer)
     if not success then _protocol_error(string) end
     
@@ -61,7 +60,7 @@ class ProtocolAuthNull is Protocol
     command.metadata.update("Socket-Type", _socket_type.string())
     _session.write(_CommandParser.write(command))
   
-  fun ref _read_ready_command(buffer: Buffer ref) ? =>
+  fun ref _read_ready_command(buffer: _Buffer ref) ? =>
     let command = _CommandAuthNullReady
     (let success, let string) = _CommandParser.read(command, buffer)
     if not success then _protocol_error(string) end
@@ -72,7 +71,7 @@ class ProtocolAuthNull is Protocol
     _session.activated()
     _next_state(_ProtocolAuthNullStateReadMessage)
   
-  fun ref _read_message(buffer: Buffer ref) ? =>
+  fun ref _read_message(buffer: _Buffer ref) ? =>
     (let success, let string) = _message_parser.read(buffer)
     if not success then _protocol_error(string) end
     

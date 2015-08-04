@@ -1,6 +1,4 @@
 
-use "net"
-
 primitive _Greeting
   fun write(mechanism: String = "NULL", as_server: Bool = false): Array[U8] val =>
     let output: Array[U8] trn = recover Array[U8] end
@@ -26,7 +24,7 @@ primitive _Greeting
     
     output
   
-  fun read(buffer: Buffer ref): (Bool, String) ? =>
+  fun read(buffer: _Buffer ref): (Bool, String) ? =>
     if buffer.size() < 64 then error end // try again later
     
     if buffer.u8() != 0xFF then return (false, "signature-start") end

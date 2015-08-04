@@ -1,5 +1,4 @@
 
-use "net"
 use "collections"
 
 interface _Command
@@ -9,7 +8,7 @@ interface _Command
 
 class _CommandUtil
   fun tag read_bytes_as_metadata(metadata: Map[String, String], bytes: Array[U8] val) =>
-    let buffer = Buffer.append(bytes)
+    let buffer = _Buffer.append(bytes)
     if metadata.size() > 0 then metadata.clear() end
     
     while buffer.size() > 0 do
@@ -74,7 +73,7 @@ primitive _CommandParser
     
     output
   
-  fun read(command: _Command, buffer: Buffer): (Bool, String) ? =>
+  fun read(command: _Command, buffer: _Buffer): (Bool, String) ? =>
     var offset: U64 = 0
     
     // Peek ident byte to determine number of size bytes, then peek size.

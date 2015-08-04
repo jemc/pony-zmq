@@ -1,5 +1,4 @@
 
-use "net"
 use "collections"
 use "../inspect"
 
@@ -81,7 +80,7 @@ class MessageParser
     
     output
   
-  fun ref read(buffer: Buffer): (Bool, String) ? =>
+  fun ref read(buffer: _Buffer): (Bool, String) ? =>
     var has_more: Bool = true
     
     while has_more do

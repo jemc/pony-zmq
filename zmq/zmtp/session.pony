@@ -1,6 +1,4 @@
 
-use "net"
-
 interface SessionHandleActivated     fun ref apply()                 => None
 interface SessionHandleProtocolError fun ref apply(string: String)   => None
 interface SessionHandleWrite         fun ref apply(bytes: Bytes)     => None
@@ -33,5 +31,5 @@ class Session
     _protocol = protocol
     _protocol.handle_start()
   
-  fun ref handle_input(buffer: Buffer ref) =>
+  fun ref handle_input(buffer: _Buffer ref) =>
     _protocol.handle_input(buffer)
