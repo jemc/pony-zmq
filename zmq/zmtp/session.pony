@@ -43,10 +43,7 @@ class Session
     write(_Greeting.write())
   
   fun ref _read_greeting(buffer: _Buffer ref) ? =>
-    (let success, let string) = _Greeting.read(buffer)
-    if not success then protocol_error(string); error end
+    _Greeting.read(buffer, protocol_error)
   
   fun ref _read_message(buffer: _Buffer ref): Message trn^? =>
-    (let success, let string) = _message_parser.read(buffer)
-    if not success then protocol_error(string); error end
-    _message_parser.take_message()
+    _message_parser.read(buffer, protocol_error)

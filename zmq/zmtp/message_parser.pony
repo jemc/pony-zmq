@@ -2,12 +2,6 @@
 class MessageParser
   var _message: Message trn = recover Message end
   
-  fun ref take_message(): Message trn^ =>
-    """
-    Transfer ownership of the current message to the caller and start a new one.
-    """
-    _message = recover Message end
-  
   fun tag write(message: Message box): Array[U8] val =>
     let output = recover trn Array[U8] end
     let frame_count = message.size()
@@ -32,7 +26,7 @@ class MessageParser
     
     output
   
-  fun ref read(buffer: _Buffer): (Bool, String) ? =>
+  fun ref read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): Message trn^? =>
     var has_more: Bool = true
     
     while has_more do
@@ -44,7 +38,8 @@ class MessageParser
                  | 0x00 | 0x01 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
                  | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)
                  else
-                   return (false, "unknown frame ident byte: " + ident.string(IntHex))
+                   protocol_error("unknown frame ident byte: " + ident.string(IntHex))
+                   error
                  end
       
       // Raise error if not all bytes are available yet.
@@ -61,4 +56,5 @@ class MessageParser
       has_more = (0 != (ident and 0x01))
     end
     
-    (true, "")
+    // Transfer ownership of the current message to the caller and start a new one.
+    _message = recover Message end

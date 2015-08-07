@@ -24,25 +24,25 @@ primitive _Greeting
     
     output
   
-  fun read(buffer: _Buffer ref): (Bool, String) ? =>
+  fun read(buffer: _Buffer ref, protocol_error: SessionHandleProtocolError): String? =>
     if buffer.size() < 64 then error end // try again later
     
-    if buffer.u8() != 0xFF then return (false, "signature-start") end
+    if buffer.u8() != 0xFF then protocol_error("signature-start"); error end
     buffer.skip(8) // signature-padding
-    if buffer.u8() != 0x7F then return (false, "signature-end") end
+    if buffer.u8() != 0x7F then protocol_error("signature-end"); error end
     
     let version = buffer.u8()
-    if version <  0x03 then return (false, "version-major: " + version.string()) end
+    if version <  0x03 then protocol_error("version-major: " + version.string()); error end
     buffer.skip(1) // version-minor
     
     let mechanism = String; mechanism.append(buffer.block(20)).strip(String.push(0))
-    if mechanism != "NULL" then return (false, "mechanism: " + mechanism) end
+    if mechanism != "NULL" then protocol_error("mechanism: " + mechanism); error end
     
     // TODO: reinstate as-server check
     buffer.skip(1) // as-server
     // let as_server = buffer.u8()
-    // if as_server != 0x01 then return (false, "as-server: " + as_server.string()) end
+    // if as_server != 0x01 then protocol_error("as-server: " + as_server.string()); error end
     
     buffer.skip(31) // filler
     
-    (true, version.string())
+    version.string()
