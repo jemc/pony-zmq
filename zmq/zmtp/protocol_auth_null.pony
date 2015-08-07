@@ -17,7 +17,6 @@ class ProtocolAuthNull is Protocol
   let _socket_type: SocketType
   
   var _state: _ProtocolAuthNullState = _ProtocolAuthNullStateReadGreeting
-  let _message_parser: MessageParser = MessageParser
   
   new create(session: Session, socket_type: SocketType) =>
     _session = session
@@ -37,19 +36,17 @@ class ProtocolAuthNull is Protocol
   
   fun ref handle_start() =>
     _next_state(_ProtocolAuthNullStateReadGreeting)
-    _write_greeting()
+    _session._write_greeting()
   
   fun ref _protocol_error(string: String)? =>
     _session.protocol_error(string)
     error
   
   fun ref _write_greeting() =>
-    _session.write(_Greeting.write())
+    _session._write_greeting()
   
   fun ref _read_greeting(buffer: _Buffer ref) ? =>
-    (let success, let string) = _Greeting.read(buffer)
-    if not success then _protocol_error(string) end
-    
+    _session._read_greeting(buffer)
     _next_state(_ProtocolAuthNullStateReadHandshakeReady)
     _write_ready_command()
   
@@ -70,8 +67,5 @@ class ProtocolAuthNull is Protocol
     _next_state(_ProtocolAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref) ? =>
-    (let success, let string) = _message_parser.read(buffer)
-    if not success then _protocol_error(string) end
-    
-    _session.received(_message_parser.take_message())
+    _session.received(_session._read_message(buffer))
     _next_state(_ProtocolAuthNullStateReadMessage)

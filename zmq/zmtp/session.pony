@@ -17,6 +17,8 @@ class Session
   var write:          SessionHandleWrite         = SessionHandleWriteNone
   var received:       SessionHandleReceived      = SessionHandleReceivedNone
   
+  let _message_parser: MessageParser = MessageParser
+  
   fun ref start(
     protocol: Protocol,
     handle_activated:      SessionHandleActivated,
@@ -33,3 +35,18 @@ class Session
   
   fun ref handle_input(buffer: _Buffer ref) =>
     _protocol.handle_input(buffer)
+  
+  ///
+  // Convenience methods for use by Protocols
+  
+  fun ref _write_greeting() =>
+    write(_Greeting.write())
+  
+  fun ref _read_greeting(buffer: _Buffer ref) ? =>
+    (let success, let string) = _Greeting.read(buffer)
+    if not success then protocol_error(string); error end
+  
+  fun ref _read_message(buffer: _Buffer ref): Message trn^? =>
+    (let success, let string) = _message_parser.read(buffer)
+    if not success then protocol_error(string); error end
+    _message_parser.take_message()
