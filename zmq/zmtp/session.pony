@@ -9,8 +9,17 @@ class SessionHandleProtocolErrorNone is SessionHandleProtocolError
 class SessionHandleWriteNone         is SessionHandleWrite
 class SessionHandleReceivedNone      is SessionHandleReceived
 
+interface SocketType val
+  fun string(): String
+  fun accepts(other: String): Bool
+
+primitive SocketTypeNone
+  fun string(): String => ""
+  fun accepts(other: String): Bool => false
+
 class Session
   var _protocol: Protocol = ProtocolNone
+  var _socket_type: SocketType = SocketTypeNone
   
   var activated:      SessionHandleActivated     = SessionHandleActivatedNone
   var protocol_error: SessionHandleProtocolError = SessionHandleProtocolErrorNone
@@ -20,7 +29,8 @@ class Session
   let _message_parser: MessageParser = MessageParser
   
   fun ref start(
-    protocol: Protocol,
+    protocol:    Protocol,
+    socket_type: SocketType,
     handle_activated:      SessionHandleActivated,
     handle_protocol_error: SessionHandleProtocolError,
     handle_write:          SessionHandleWrite,
@@ -31,6 +41,7 @@ class Session
     write          = handle_write
     received       = handle_received
     _protocol = protocol
+    _socket_type = socket_type
     _protocol.handle_start()
   
   fun ref handle_input(buffer: _Buffer ref) =>
@@ -38,6 +49,9 @@ class Session
   
   ///
   // Convenience methods for use by Protocols
+  
+  fun _socket_type_string(): String =>
+    _socket_type.string()
   
   fun ref _write_greeting() =>
     write(_Greeting.write())

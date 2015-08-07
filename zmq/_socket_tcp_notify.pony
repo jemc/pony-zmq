@@ -45,7 +45,8 @@ class _SocketTCPNotify is TCPConnectionNotify
   fun ref _reset(conn: TCPConnection ref) =>
     _buffer.clear()
     _session.start(where
-      protocol = zmtp.ProtocolAuthNull.create(_session, _socket_type),
+      protocol = zmtp.ProtocolAuthNull.create(_session),
+      socket_type = _socket_type,
       handle_activated      = this~_handle_activated(conn),
       handle_protocol_error = this~_handle_protocol_error(conn),
       handle_write          = this~_handle_write(conn),
