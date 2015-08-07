@@ -53,6 +53,9 @@ class Session
   fun _socket_type_string(): String =>
     _socket_type.string()
   
+  fun _socket_type_accepts(string: String): Bool =>
+    _socket_type.accepts(string)
+  
   fun ref _write_greeting() =>
     write(_Greeting.write())
   

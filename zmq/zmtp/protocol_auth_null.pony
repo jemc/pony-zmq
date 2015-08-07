@@ -53,8 +53,12 @@ class ProtocolAuthNull is Protocol
       error
     end
     
-    // TODO: verify valid socket type in metadata
-    let other_socket_type = try command.metadata("Socket-Type") else "" end
+    let other_type = try command.metadata("Socket-Type") else "" end
+    if not _session._socket_type_accepts(other_type) then
+      let this_type = _session._socket_type_string()
+      _session.protocol_error(this_type+" socket cannot accept: "+other_type)
+      error
+    end
     
     _session.activated()
     _next_state(_ProtocolAuthNullStateReadMessage)
