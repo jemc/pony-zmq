@@ -8,7 +8,7 @@ primitive _CommandParser
     let name = command.name()
     inner.push(name.size().u8())
     inner.append(name)
-    inner.append(command.write_bytes())
+    inner.append(command.bytes())
     
     // Determine the ident and size bytewidth based on the size itself.
     let is_short = inner.size() <= 0xFF
@@ -22,7 +22,7 @@ primitive _CommandParser
     
     output
   
-  fun read(command: _Command, buffer: _Buffer): (Bool, String) ? =>
+  fun read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): _CommandUnknown? =>
     var offset: U64 = 0
     
     // Peek ident byte to determine number of size bytes, then peek size.
@@ -31,7 +31,8 @@ primitive _CommandParser
                | 0x04 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
                | 0x06 => offset = offset + 8; buffer.peek_u64_be(1)
                else
-                 return (false, "unknown command ident byte: " + ident.string(IntHex))
+                 protocol_error("unknown command ident byte: " + ident.string(IntHex))
+                 error
                end
     
     // Raise error if not all bytes are available yet.
@@ -46,11 +47,6 @@ primitive _CommandParser
     name.append(buffer.block(name_size))
     
     // Read the rest of the body.
-    let body: Array[U8] val = buffer.block(size - 1 - name_size)
+    let bytes: Array[U8] val = buffer.block(size - 1 - name_size)
     
-    // Compare to the given command's name
-    if name != command.name() then return (false, consume name) end
-    
-    // Apply the body to the given command's name and return success
-    command.read_bytes(body)
-    (true, consume name)
+    _CommandUnknown(consume name, consume bytes)

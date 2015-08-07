@@ -45,5 +45,11 @@ class Session
   fun ref _read_greeting(buffer: _Buffer ref) ? =>
     _Greeting.read(buffer, protocol_error)
   
+  fun ref _write_command(command: _Command) =>
+    write(_CommandParser.write(command))
+  
+  fun ref _read_command(buffer: _Buffer ref): _CommandUnknown? =>
+    _CommandParser.read(buffer, protocol_error)
+  
   fun ref _read_message(buffer: _Buffer ref): Message trn^? =>
     _message_parser.read(buffer, protocol_error)

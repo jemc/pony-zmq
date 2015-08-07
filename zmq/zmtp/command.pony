@@ -1,10 +1,11 @@
 
 use "collections"
+use "../inspect"
+
 
 interface _Command
   fun name(): String val
-  fun write_bytes(): Array[U8] val
-  fun ref read_bytes(bytes: Array[U8] val)
+  fun bytes(): Array[U8] val
 
 class _CommandUtil
   fun tag read_bytes_as_metadata(metadata: Map[String, String], bytes: Array[U8] val) =>
@@ -38,14 +39,20 @@ class _CommandUtil
     output
 
 class _CommandUnknown is _Command
-  var bytes: Array[U8] val = recover Array[U8] end
-  fun name(): String => ""
-  fun write_bytes(): Array[U8] val          => bytes
-  fun ref read_bytes(bytes': Array[U8] val) => bytes = bytes'
+  let _name: String
+  let _bytes: Array[U8] val
+  fun name(): String => _name
+  fun bytes(): Array[U8] val => _bytes
+  new create(name': String, bytes': Array[U8] val) =>
+    _name = name'
+    _bytes = bytes'
 
 class _CommandAuthNullReady is _Command
   let metadata: Map[String, String] = Map[String, String]
-  new create() => None // TODO: figure out why ponyc default constructors are now iso as of 718c37398270b1a9fafa85a7ba2af286f4d53a5f
   fun name(): String => "READY"
-  fun write_bytes(): Array[U8] val         => _CommandUtil.write_bytes_as_metadata(metadata)
-  fun ref read_bytes(bytes: Array[U8] val) => _CommandUtil.read_bytes_as_metadata(metadata, bytes)
+  fun bytes(): Array[U8] val => _CommandUtil.write_bytes_as_metadata(metadata)
+  new create() => None // TODO: figure out why ponyc default constructors are now iso as of 718c37398270b1a9fafa85a7ba2af286f4d53a5f
+  fun ref apply(orig: _CommandUnknown): _CommandAuthNullReady^? =>
+    if orig.name() != name() then error end
+    _CommandUtil.read_bytes_as_metadata(metadata, orig.bytes())
+    this

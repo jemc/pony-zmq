@@ -38,14 +38,10 @@ class ProtocolAuthNull is Protocol
     _next_state(_ProtocolAuthNullStateReadGreeting)
     _session._write_greeting()
   
-  fun ref _protocol_error(string: String)? =>
-    _session.protocol_error(string)
-    error
-  
   fun ref _write_greeting() =>
     _session._write_greeting()
   
-  fun ref _read_greeting(buffer: _Buffer ref) ? =>
+  fun ref _read_greeting(buffer: _Buffer ref)? =>
     _session._read_greeting(buffer)
     _next_state(_ProtocolAuthNullStateReadHandshakeReady)
     _write_ready_command()
@@ -53,12 +49,16 @@ class ProtocolAuthNull is Protocol
   fun ref _write_ready_command() =>
     let command = _CommandAuthNullReady
     command.metadata("Socket-Type") = _socket_type.string()
-    _session.write(_CommandParser.write(command))
+    _session._write_command(command)
   
-  fun ref _read_ready_command(buffer: _Buffer ref) ? =>
+  fun ref _read_ready_command(buffer: _Buffer ref)? =>
     let command = _CommandAuthNullReady
-    (let success, let string) = _CommandParser.read(command, buffer)
-    if not success then _protocol_error(string) end
+    let c_data = _session._read_command(buffer)
+    
+    try command(c_data) else
+      _session.protocol_error("Expected READY command, got: "+c_data.name())
+      error
+    end
     
     // TODO: verify valid socket type in metadata
     let other_socket_type = try command.metadata("Socket-Type") else "" end
