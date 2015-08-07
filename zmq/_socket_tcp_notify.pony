@@ -1,7 +1,6 @@
 
 use "net"
 use zmtp = "zmtp"
-// use "./inspect"
 
 interface _SocketTCPNotifiable tag
   be protocol_error(string: String)
@@ -25,24 +24,18 @@ class _SocketTCPNotify is TCPConnectionNotify
   // TCPConnectionNotify methods
   
   fun ref accepted(conn: TCPConnection ref) =>
-    // Inspect.print("_SocketTCPNotify.accepted")
     _reset(conn)
   
   fun ref connected(conn: TCPConnection ref) =>
-    // Inspect.print("_SocketTCPNotify.connected")
     _reset(conn)
   
   fun ref connect_failed(conn: TCPConnection ref) =>
-    // Inspect.print("_SocketTCPNotify.connect_failed")
     _parent.connect_failed()
   
   fun ref closed(conn: TCPConnection ref) =>
-    // Inspect.print("_SocketTCPNotify.closed")
     _parent.closed()
   
-  fun ref received(conn: TCPConnection ref, data': Array[U8] iso) =>
-    let data: Array[U8] trn = recover consume data' end
-    // Inspect.print("_SocketTCPNotify.received " + Inspect(data))
+  fun ref received(conn: TCPConnection ref, data: Array[U8] iso) =>
     _buffer.append(consume data)
     _session.handle_input(_buffer)
   

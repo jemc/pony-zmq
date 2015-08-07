@@ -1,6 +1,5 @@
 
 use "net"
-// use "./inspect"
 
 actor _SocketBindTCP
   var _inner: TCPListener
@@ -19,19 +18,15 @@ class _SocketBindTCPListenNotify is TCPListenNotify
     _socket_type = socket_type
     
   fun ref listening(listen: TCPListener ref) =>
-    // Inspect.print("_SocketBindTCPListenNotify.listening")
     None // TODO: pass along to Socket
   
   fun ref not_listening(listen: TCPListener ref) =>
-    // Inspect.print("_SocketBindTCPListenNotify.not_listening")
     None // TODO: pass along to Socket
   
   fun ref closed(listen: TCPListener ref) =>
-    // Inspect.print("_SocketBindTCPListenNotify.closed")
     None // TODO: pass along to Socket
   
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
-    // Inspect.print("_SocketBindTCPListenNotify.connected")
     _SocketTCPNotify(_SocketPeerTCPBound(_parent, listen), _socket_type)
 
 actor _SocketPeerTCPBound is _SocketTCPNotifiable
