@@ -1,8 +1,11 @@
 
-interface SessionHandleActivated     fun ref apply()                 => None
-interface SessionHandleProtocolError fun ref apply(string: String)   => None
-interface SessionHandleWrite         fun ref apply(bytes: Bytes)     => None
-interface SessionHandleReceived      fun ref apply(message: Message) => None
+interface _MessageWriteTransform iso
+  fun ref apply(message: Message): Array[U8] val
+
+interface SessionHandleActivated     fun ref apply(writex: _MessageWriteTransform) => None
+interface SessionHandleProtocolError fun ref apply(string: String)                 => None
+interface SessionHandleWrite         fun ref apply(bytes: Bytes)                   => None
+interface SessionHandleReceived      fun ref apply(message: Message)               => None
 
 class SessionHandleActivatedNone     is SessionHandleActivated
 class SessionHandleProtocolErrorNone is SessionHandleProtocolError

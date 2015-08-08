@@ -60,7 +60,7 @@ class ProtocolAuthNull is Protocol
       error
     end
     
-    _session.activated()
+    _session.activated(recover MessageParser~write() end)
     _next_state(_ProtocolAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref) ? =>

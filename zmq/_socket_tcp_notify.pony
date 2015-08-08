@@ -4,7 +4,7 @@ use zmtp = "zmtp"
 
 interface _SocketTCPNotifiable tag
   be protocol_error(string: String)
-  be activated(conn: TCPConnection)
+  be activated(conn: TCPConnection, writex: _MessageWriteTransform)
   be closed()
   be connect_failed()
   be received(message: zmtp.Message)
@@ -56,8 +56,8 @@ class _SocketTCPNotify is TCPConnectionNotify
   ///
   // Session handler methods
   
-  fun ref _handle_activated(conn: TCPConnection ref) =>
-    _parent.activated(conn)
+  fun ref _handle_activated(conn: TCPConnection ref, writex: _MessageWriteTransform) =>
+    _parent.activated(conn, consume writex)
   
   fun ref _handle_protocol_error(conn: TCPConnection ref, string: String) =>
     _parent.protocol_error(string)

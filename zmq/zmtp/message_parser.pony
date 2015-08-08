@@ -1,4 +1,7 @@
 
+interface MessageWriteTransform iso
+  fun ref apply(message: Message): Array[U8] val
+
 class MessageParser
   var _message: Message trn = recover Message end
   

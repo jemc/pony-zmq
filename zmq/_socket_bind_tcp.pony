@@ -51,10 +51,11 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
     dispose()
     _parent._protocol_error(this, string)
   
-  be activated(conn: TCPConnection) =>
+  be activated(conn: TCPConnection, writex: _MessageWriteTransform) =>
     _inner = conn
     _active = true
     _parent._connected(this)
+    _messages.set_write_transform(consume writex)
     _messages.flush(conn)
   
   be closed() =>

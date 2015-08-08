@@ -7,6 +7,10 @@ interface _MessageQueueWritable tag
 class _MessageQueue
   let _inner: List[Message] = _inner.create()
   var _empty: Bool = true
+  var _write_transform: _MessageWriteTransform = recover _MessageParser~write() end
+  
+  fun ref set_write_transform(writex: _MessageWriteTransform) =>
+    _write_transform = consume writex
   
   fun ref push(message: Message) =>
     """
@@ -22,7 +26,7 @@ class _MessageQueue
     if _empty then return end
     try
       while true do
-        target.write(_MessageParser.write(_inner.shift()))
+        target.write(_write_transform(_inner.shift()))
       end
       _empty = true
     end
@@ -35,7 +39,7 @@ class _MessageQueue
       try
         let target = target' as _MessageQueueWritable
         flush(target as _MessageQueueWritable)
-        target.write(_MessageParser.write(message))
+        target.write(_write_transform(message))
       else
         push(message)
       end

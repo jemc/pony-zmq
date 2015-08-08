@@ -2,7 +2,7 @@
 use "time"
 use "net"
 
-actor _SocketPeerTCP
+actor _SocketPeerTCP is _SocketTCPNotifiable
   let _parent: Socket
   let _socket_type: SocketType
   let _endpoint: EndpointTCP
@@ -34,10 +34,11 @@ actor _SocketPeerTCP
     reconnect_later()
     _parent._protocol_error(this, string)
   
-  be activated(conn: TCPConnection) =>
+  be activated(conn: TCPConnection, writex: _MessageWriteTransform) =>
     _inner = conn
     _active = true
     _parent._connected(this)
+    _messages.set_write_transform(consume writex)
     _messages.flush(conn)
   
   be closed() =>
