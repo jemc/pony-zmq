@@ -12,13 +12,17 @@ interface _SocketTCPNotifiable tag
 class _SocketTCPNotify is TCPConnectionNotify
   let _parent: _SocketTCPNotifiable
   let _socket_type: SocketType
+  let _socket_opts: SocketOptions val
   
   let _buffer: Buffer = Buffer
   var _session: zmtp.Session = zmtp.Session
   
-  new iso create(parent: _SocketTCPNotifiable, socket_type: SocketType) =>
+  new iso create(parent: _SocketTCPNotifiable,
+    socket_type: SocketType, socket_opts: SocketOptions val
+  ) =>
     _parent = parent
     _socket_type = socket_type
+    _socket_opts = socket_opts
   
   ///
   // TCPConnectionNotify methods

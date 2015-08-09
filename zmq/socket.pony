@@ -22,6 +22,7 @@ actor Socket
   let _outgoing: List[Message] = _outgoing.create()
   
   let _socket_type: SocketType
+  let _socket_opts: SocketOptions = _socket_opts.create()
   
   new create(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone) =>
     _socket_type = socket_type
@@ -42,23 +43,33 @@ actor Socket
     end
     _notify.closed(this)
   
-  fun box _make_peer(string: String): _SocketPeer? =>
+  fun _socket_opts_clone(): SocketOptions iso^ =>
+    let clone = recover iso SocketOptions end
+    for v in _socket_opts.values() do
+      clone.push(v)
+    end
+    clone
+  
+  fun _make_peer(string: String): _SocketPeer? =>
     match EndpointParser.from_uri(string)
-    | let e: EndpointTCP => _SocketPeerTCP(this, _socket_type, e)
+    | let e: EndpointTCP => _SocketPeerTCP(this, _socket_type, _socket_opts_clone(), e)
     | let e: EndpointUnknown => error
     else
       Inspect.out("failed to parse connect endpoint: "+string)
       error
     end
   
-  fun box _make_bind(string: String): _SocketBind? =>
+  fun _make_bind(string: String): _SocketBind? =>
     match EndpointParser.from_uri(string)
-    | let e: EndpointTCP => _SocketBindTCP(this, _socket_type, e)
+    | let e: EndpointTCP => _SocketBindTCP(this, _socket_type, _socket_opts_clone(), e)
     | let e: EndpointUnknown => error
     else
       Inspect.out("failed to parse bind endpoint: "+string)
       error
     end
+  
+  be set(optval: SocketOptionWithValue) =>
+    optval.set_in(_socket_opts)
   
   be connect(string: String) =>
     try _peers(string) else
