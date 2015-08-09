@@ -41,7 +41,7 @@ class ProtocolAuthNull is Protocol
   
   fun ref _write_ready_command() =>
     let command = _CommandAuthNullReady
-    command.metadata("Socket-Type") = _session._socket_type_string()
+    command.metadata("Socket-Type") = _session.keeper.socket_type_string()
     _session._write_command(command)
   
   fun ref _read_ready_command(buffer: _Buffer ref)? =>
@@ -54,8 +54,8 @@ class ProtocolAuthNull is Protocol
     end
     
     let other_type = try command.metadata("Socket-Type") else "" end
-    if not _session._socket_type_accepts(other_type) then
-      let this_type = _session._socket_type_string()
+    if not _session.keeper.socket_type_accepts(other_type) then
+      let this_type = _session.keeper.socket_type_string()
       _session.protocol_error(this_type+" socket cannot accept: "+other_type)
       error
     end

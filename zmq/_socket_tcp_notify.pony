@@ -11,27 +11,22 @@ interface _SocketTCPNotifiable tag
 
 class _SocketTCPNotify is TCPConnectionNotify
   let _parent: _SocketTCPNotifiable
-  let _socket_type: SocketType
-  let _socket_opts: SocketOptions val
-  
-  let _buffer: Buffer = Buffer
-  var _session: zmtp.Session = zmtp.Session
+  let _session: _SessionKeeper
   
   new iso create(parent: _SocketTCPNotifiable,
     socket_type: SocketType, socket_opts: SocketOptions val
   ) =>
     _parent = parent
-    _socket_type = socket_type
-    _socket_opts = socket_opts
+    _session = _SessionKeeper(socket_type, socket_opts)
   
   ///
   // TCPConnectionNotify methods
   
   fun ref accepted(conn: TCPConnection ref) =>
-    _reset(conn)
+    _start(conn)
   
   fun ref connected(conn: TCPConnection ref) =>
-    _reset(conn)
+    _start(conn)
   
   fun ref connect_failed(conn: TCPConnection ref) =>
     _parent.connect_failed()
@@ -40,17 +35,13 @@ class _SocketTCPNotify is TCPConnectionNotify
     _parent.closed()
   
   fun ref received(conn: TCPConnection ref, data: Array[U8] iso) =>
-    _buffer.append(consume data)
-    _session.handle_input(_buffer)
+    _session.handle_input(consume data)
   
   ///
   // Private convenience methods
   
-  fun ref _reset(conn: TCPConnection ref) =>
-    _buffer.clear()
+  fun ref _start(conn: TCPConnection ref) =>
     _session.start(where
-      protocol = zmtp.ProtocolAuthNull.create(_session),
-      socket_type = _socket_type,
       handle_activated      = this~_handle_activated(conn),
       handle_protocol_error = this~_handle_protocol_error(conn),
       handle_write          = this~_handle_write(conn),
