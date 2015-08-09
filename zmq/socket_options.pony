@@ -20,7 +20,7 @@ interface SocketOption[A: SocketOptionValue] tag
   fun tag validate(value: A)? => None
   fun tag validate_error(): String => "Invalid socket option value."
   
-  fun tag find_in(list: SocketOptions): A =>
+  fun tag find_in(list: SocketOptions box): A =>
     try
       var iter = list.values()
       while iter.has_next() do

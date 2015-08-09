@@ -15,7 +15,6 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   let _messages: _MessageQueue = _MessageQueue
   
   var _reconnect_timer: (Timer tag | None) = None
-  let _reconnect_ivl: U64 = 500000000 // 500 ms
   
   new create(parent: Socket, socket_type: SocketType,
     socket_opts: SocketOptions val, endpoint: EndpointTCP
@@ -67,8 +66,11 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   fun ref reconnect_later() =>
     try (_inner as TCPConnection).dispose() end
     _inner = None
-    _parent.set_timer(
-      Timer(_ReconnectTimerNotify(this), _reconnect_ivl, _reconnect_ivl))
+    let ns = _reconnect_interval_ns()
+    _parent.set_timer(Timer(_ReconnectTimerNotify(this), ns, ns))
+  
+  fun _reconnect_interval_ns(): U64 =>
+    (ReconnectInterval.find_in(_socket_opts) * 1e9).u64()
   
   be _reconnect_timer_fire() =>
     if not _active and not _disposed then
