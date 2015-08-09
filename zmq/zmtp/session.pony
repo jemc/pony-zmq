@@ -32,7 +32,7 @@ class Session
   let _message_parser: MessageParser = MessageParser
   
   fun ref start(
-    keeper': _SessionKeeper,
+    session_keeper: _SessionKeeper,
     protocol: Protocol,
     handle_activated:      SessionHandleActivated,
     handle_protocol_error: SessionHandleProtocolError,
@@ -43,7 +43,7 @@ class Session
     protocol_error = handle_protocol_error
     write          = handle_write
     received       = handle_received
-    keeper    = keeper'
+    keeper = session_keeper
     _protocol = protocol
     _protocol.handle_start()
   

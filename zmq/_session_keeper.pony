@@ -25,7 +25,7 @@ class _SessionKeeper
   ) =>
     _buffer.clear()
     _session.start(where
-      keeper' = this,
+      session_keeper = this,
       protocol = zmtp.ProtocolAuthNull.create(_session),
       handle_activated      = handle_activated,
       handle_protocol_error = handle_protocol_error,
