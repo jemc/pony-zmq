@@ -45,13 +45,7 @@ class ProtocolAuthNull is Protocol
     _session._write_command(command)
   
   fun ref _read_ready_command(buffer: _Buffer ref)? =>
-    let command = _CommandAuthNullReady
-    let c_data = _session._read_command(buffer)
-    
-    try command(c_data) else
-      _session.protocol_error("Expected READY command, got: "+c_data.name())
-      error
-    end
+    let command = _session._read_specific_command[_CommandAuthNullReady](buffer)
     
     let other_type = try command.metadata("Socket-Type") else "" end
     if not _session.keeper.socket_type_accepts(other_type) then

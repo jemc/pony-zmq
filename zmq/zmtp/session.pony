@@ -65,5 +65,16 @@ class Session
   fun ref _read_command(buffer: _Buffer ref): _CommandUnknown? =>
     _CommandParser.read(buffer, protocol_error)
   
+  fun ref _read_specific_command[A: _Command ref](buffer: _Buffer ref): A? =>
+    let command = A.create()
+    let c_data = _read_command(buffer)
+    
+    try command(c_data) else
+      protocol_error("Expected "+command.name()+" command, got: "+c_data.name())
+      error
+    end
+    
+    command
+  
   fun ref _read_message(buffer: _Buffer ref): Message trn^? =>
     _message_parser.read(buffer, protocol_error)
