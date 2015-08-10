@@ -1,6 +1,8 @@
 
 use net = "net"
+use z85 = "z85"
 use zmtp = "zmtp"
+use "../../pony-sodium/sodium"
 
 class _SessionKeeper
   let _session: zmtp.Session = zmtp.Session
@@ -32,6 +34,29 @@ class _SessionKeeper
       handle_write          = handle_write,
       handle_received       = handle_received
     )
+  
+  fun _make_curve_key(key: String): String? =>
+    match key.size()
+    | 40 => key
+    | 32 => z85.Z85.decode(key)
+    else error
+    end
+  
+  fun ref _make_curve_protocol(): zmtp.Protocol? =>
+    let curve_sk = CryptoBoxSecretKey(_make_curve_key(
+                     CurveSecretKey.find_in(_socket_opts)))
+    if CurveAsServer.find_in(_socket_opts) then
+      return zmtp.ProtocolAuthCurveServer(_session, curve_sk)
+    else
+      let curve_pks = CryptoBoxPublicKey(_make_curve_key(
+                        CurvePublicKeyOfServer.find_in(_socket_opts)))
+      return zmtp.ProtocolAuthCurveClient(_session, curve_sk, curve_pks)
+    end
+  
+  fun ref _make_protocol(): zmtp.Protocol =>
+    try _make_curve_protocol()
+    else zmtp.ProtocolAuthNull.create(_session)
+    end
   
   fun ref handle_input(data: Array[U8] iso) =>
     _buffer.append(consume data)
