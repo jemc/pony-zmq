@@ -1,6 +1,6 @@
 
-primitive _CommandParser
-  fun write(command: _Command box): Array[U8] val =>
+primitive CommandParser
+  fun write(command: Command box): Array[U8] val =>
     let output = recover trn Array[U8] end
     let inner = recover trn Array[U8] end
     
@@ -22,7 +22,7 @@ primitive _CommandParser
     
     output
   
-  fun read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): _CommandUnknown? =>
+  fun read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): CommandUnknown? =>
     var offset: U64 = 0
     
     // Peek ident byte to determine number of size bytes, then peek size.
@@ -49,4 +49,4 @@ primitive _CommandParser
     // Read the rest of the body.
     let bytes: Array[U8] val = buffer.block(size - 1 - name_size)
     
-    _CommandUnknown(consume name, consume bytes)
+    CommandUnknown(consume name, consume bytes)

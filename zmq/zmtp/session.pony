@@ -59,13 +59,13 @@ class Session
   fun ref _read_greeting(buffer: _Buffer ref) ? =>
     _Greeting.read(buffer, protocol_error)
   
-  fun ref _write_command(command: _Command) =>
-    write(_CommandParser.write(command))
+  fun ref _write_command(command: Command) =>
+    write(CommandParser.write(command))
   
-  fun ref _read_command(buffer: _Buffer ref): _CommandUnknown? =>
-    _CommandParser.read(buffer, protocol_error)
+  fun ref _read_command(buffer: _Buffer ref): CommandUnknown? =>
+    CommandParser.read(buffer, protocol_error)
   
-  fun ref _read_specific_command[A: _Command ref](buffer: _Buffer ref): A? =>
+  fun ref _read_specific_command[A: Command ref](buffer: _Buffer ref): A? =>
     let command = A.create()
     let c_data = _read_command(buffer)
     

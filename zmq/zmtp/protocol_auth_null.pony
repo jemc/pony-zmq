@@ -40,12 +40,12 @@ class ProtocolAuthNull is Protocol
     _write_ready_command()
   
   fun ref _write_ready_command() =>
-    let command = _CommandAuthNullReady
+    let command = CommandAuthNullReady
     command.metadata("Socket-Type") = _session.keeper.socket_type_string()
     _session._write_command(command)
   
   fun ref _read_ready_command(buffer: _Buffer ref)? =>
-    let command = _session._read_specific_command[_CommandAuthNullReady](buffer)
+    let command = _session._read_specific_command[CommandAuthNullReady](buffer)
     
     let other_type = try command.metadata("Socket-Type") else "" end
     if not _session.keeper.socket_type_accepts(other_type) then

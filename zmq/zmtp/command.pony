@@ -1,13 +1,13 @@
 
 use "collections"
 
-interface _Command
+interface Command
   new ref create()
   fun name(): String val
   fun bytes(): Array[U8] val
-  fun ref apply(orig: _CommandUnknown)?
+  fun ref apply(orig: CommandUnknown)?
 
-class _CommandUtil
+class CommandUtil
   fun tag read_bytes_as_metadata(metadata: Map[String, String], bytes: Array[U8] val) =>
     let buffer = _Buffer.append(bytes)
     if metadata.size() > 0 then metadata.clear() end
@@ -38,7 +38,7 @@ class _CommandUtil
     
     output
 
-class _CommandUnknown
+class CommandUnknown
   let _name: String
   let _bytes: Array[U8] val
   fun name(): String => _name
