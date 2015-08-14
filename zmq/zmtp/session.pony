@@ -13,10 +13,14 @@ class SessionHandleWriteNone         is SessionHandleWrite
 class SessionHandleReceivedNone      is SessionHandleReceived
 
 interface _SessionKeeper
+  fun as_server(): Bool
+  fun auth_mechanism(): String
   fun socket_type_string(): String
   fun socket_type_accepts(string: String): Bool
 
 class _SessionKeeperNone is _SessionKeeper
+  fun as_server(): Bool => false
+  fun auth_mechanism(): String => ""
   fun socket_type_string(): String => ""
   fun socket_type_accepts(string: String): Bool => false
 
@@ -54,9 +58,10 @@ class Session
   // Convenience methods for use by Protocols
   
   fun ref _write_greeting() =>
-    write(Greeting.write())
+    write(Greeting.write(keeper.auth_mechanism(), keeper.as_server()))
   
   fun ref _read_greeting(buffer: _Buffer ref) ? =>
+    // TODO: validate contents of greeting compare to our settings
     Greeting.read(buffer, protocol_error)
   
   fun ref _write_command(command: Command) =>

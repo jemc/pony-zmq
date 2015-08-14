@@ -14,12 +14,14 @@ type _ProtocolAuthCurveClientState is
 
 class ProtocolAuthCurveClient is Protocol
   let _session: Session
+  let _pk: CryptoBoxPublicKey
   let _sk: CryptoBoxSecretKey
   let _pks: CryptoBoxPublicKey
   var _state: _ProtocolAuthCurveClientState = _ProtocolAuthCurveClientStateReadGreeting
   
-  new create(session: Session, sk: CryptoBoxSecretKey, pks: CryptoBoxPublicKey) =>
+  new create(session: Session, pk: CryptoBoxPublicKey, sk: CryptoBoxSecretKey, pks: CryptoBoxPublicKey) =>
     _session = session
+    _pk = pk
     _sk = sk
     _pks = pks
   

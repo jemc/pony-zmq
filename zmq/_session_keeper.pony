@@ -43,14 +43,16 @@ class _SessionKeeper
     end
   
   fun ref _make_curve_protocol(): zmtp.Protocol? =>
-    let curve_sk = CryptoBoxSecretKey(_make_curve_key(
-                     CurveSecretKey.find_in(_socket_opts)))
+    let pk = CryptoBoxPublicKey(_make_curve_key(
+               CurvePublicKey.find_in(_socket_opts)))
+    let sk = CryptoBoxSecretKey(_make_curve_key(
+               CurveSecretKey.find_in(_socket_opts)))
     if CurveAsServer.find_in(_socket_opts) then
-      return zmtp.ProtocolAuthCurveServer(_session, curve_sk)
+      return zmtp.ProtocolAuthCurveServer(_session, pk, sk)
     else
-      let curve_pks = CryptoBoxPublicKey(_make_curve_key(
-                        CurvePublicKeyOfServer.find_in(_socket_opts)))
-      return zmtp.ProtocolAuthCurveClient(_session, curve_sk, curve_pks)
+      let pks = CryptoBoxPublicKey(_make_curve_key(
+                  CurvePublicKeyOfServer.find_in(_socket_opts)))
+      return zmtp.ProtocolAuthCurveClient(_session, pk, sk, pks)
     end
   
   fun ref _make_protocol(): zmtp.Protocol =>
@@ -64,6 +66,20 @@ class _SessionKeeper
   
   ///
   // Convenience methods for the underlying session
+  
+  fun as_server(): Bool =>
+    CurveAsServer.find_in(_socket_opts)
+  
+  fun auth_mechanism(): String =>
+    try _make_curve_key(CurvePublicKey.find_in(_socket_opts))
+        _make_curve_key(CurveSecretKey.find_in(_socket_opts))
+        if not CurveAsServer.find_in(_socket_opts) then
+          _make_curve_key(CurvePublicKeyOfServer.find_in(_socket_opts))
+        end
+      "CURVE"
+    else
+      "NULL"
+    end
   
   fun socket_type_string(): String =>
     _socket_type.string()

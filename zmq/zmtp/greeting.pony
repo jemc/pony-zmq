@@ -1,6 +1,6 @@
 
 primitive Greeting
-  fun write(mechanism: String = "NULL", as_server: Bool = false): Array[U8] val =>
+  fun write(mechanism: String, as_server: Bool): Array[U8] val =>
     let output: Array[U8] trn = recover Array[U8] end
     
     output.append(recover [as U8:
