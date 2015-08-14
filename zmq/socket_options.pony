@@ -95,12 +95,22 @@ primitive CurveAsServer is SocketOption[Bool]
   """
   fun tag default(): Bool => false
 
+primitive CurvePublicKey is _SocketOptionCurveKey
+  """
+  NOT YET IMPLEMENTED.
+  The local public key to use for CURVE encryption, as a string.
+  Both the server and the client socket must set a public key,
+  which may be distributed to others to establish a trusted identity.
+  Each public key is associated with a secret key, which must be
+  kept secret to maintain security.
+  """
+
 primitive CurveSecretKey is _SocketOptionCurveKey
   """
   NOT YET IMPLEMENTED.
   The local secret key to use for CURVE encryption, as a string.
   Both the server and the client socket must set a secret key,
-  and should keep their secret key secret to maintain security.
+  and must keep their secret key secret to maintain security.
   Each secret key is associated with a public key, which may be
   distributed to others to establish a trusted identity.
   """
