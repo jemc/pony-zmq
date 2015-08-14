@@ -60,9 +60,9 @@ class Session
   fun ref _write_greeting() =>
     write(Greeting.write(keeper.auth_mechanism(), keeper.as_server()))
   
-  fun ref _read_greeting(buffer: _Buffer ref) ? =>
-    // TODO: validate contents of greeting compare to our settings
-    Greeting.read(buffer, protocol_error)
+  fun ref _read_greeting(buffer: _Buffer ref)? =>
+    Greeting.read(buffer, protocol_error,
+      keeper.auth_mechanism(), keeper.as_server())
   
   fun ref _write_command(command: Command) =>
     write(CommandParser.write(command))
