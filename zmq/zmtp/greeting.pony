@@ -1,5 +1,5 @@
 
-primitive _Greeting
+primitive Greeting
   fun write(mechanism: String = "NULL", as_server: Bool = false): Array[U8] val =>
     let output: Array[U8] trn = recover Array[U8] end
     

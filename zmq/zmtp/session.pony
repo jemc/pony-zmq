@@ -54,10 +54,10 @@ class Session
   // Convenience methods for use by Protocols
   
   fun ref _write_greeting() =>
-    write(_Greeting.write())
+    write(Greeting.write())
   
   fun ref _read_greeting(buffer: _Buffer ref) ? =>
-    _Greeting.read(buffer, protocol_error)
+    Greeting.read(buffer, protocol_error)
   
   fun ref _write_command(command: Command) =>
     write(CommandParser.write(command))
