@@ -28,7 +28,7 @@ class _SessionKeeper
     _buffer.clear()
     _session.start(where
       session_keeper = this,
-      protocol = zmtp.ProtocolAuthNull.create(_session),
+      protocol = _make_protocol(),
       handle_activated      = handle_activated,
       handle_protocol_error = handle_protocol_error,
       handle_write          = handle_write,
@@ -37,8 +37,8 @@ class _SessionKeeper
   
   fun _make_curve_key(key: String): String? =>
     match key.size()
-    | 40 => key
-    | 32 => z85.Z85.decode(key)
+    | 40 => z85.Z85.decode(key)
+    | 32 => key
     else error
     end
   
@@ -73,9 +73,6 @@ class _SessionKeeper
   fun auth_mechanism(): String =>
     try _make_curve_key(CurvePublicKey.find_in(_socket_opts))
         _make_curve_key(CurveSecretKey.find_in(_socket_opts))
-        if not CurveAsServer.find_in(_socket_opts) then
-          _make_curve_key(CurvePublicKeyOfServer.find_in(_socket_opts))
-        end
       "CURVE"
     else
       "NULL"

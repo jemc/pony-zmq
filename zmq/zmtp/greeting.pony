@@ -47,11 +47,13 @@ primitive Greeting
       error
     end
     
-    let other_as_server: Bool = buffer.u8() != 0x00
-    if (mechanism != "NULL") and (as_server is other_as_server) then
-      protocol_error("other as-server: " + as_server.string())
-      error
-    end
+    // TODO: reinstate as-server check here
+    buffer.skip(1) // as-server
+    // let other_as_server: Bool = buffer.u8() != 0x00
+    // if (mechanism != "NULL") and (as_server is other_as_server) then
+    //   protocol_error("other as-server: " + as_server.string())
+    //   error
+    // end
     
     buffer.skip(31) // filler
     

@@ -30,6 +30,13 @@ primitive CommandParser
     let size = match ident
                | 0x04 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
                | 0x06 => offset = offset + 8; buffer.peek_u64_be(1)
+               // Note that the following are not actually allowed by spec,
+               // but they are used by the libzmq implementation for
+               // CURVE MESSAGE commands, so we have to accept them for interop.
+               | 0x00 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
+               | 0x01 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
+               | 0x02 => offset = offset + 8; buffer.peek_u64_be(1)
+               | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)
                else
                  protocol_error("unknown command ident byte: " + ident.string(IntHex))
                  error

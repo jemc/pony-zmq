@@ -61,3 +61,10 @@ class MessageParser
     
     // Transfer ownership of the current message to the caller and start a new one.
     _message = recover Message end
+  
+  fun ref add_to_message(frame: Frame) =>
+    _message.push(consume frame)
+  
+  fun ref take_message(): Message trn^ =>
+    // Transfer ownership of the current message to the caller and start a new one.
+    _message = recover Message end

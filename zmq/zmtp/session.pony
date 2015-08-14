@@ -83,3 +83,9 @@ class Session
   
   fun ref _read_message(buffer: _Buffer ref): Message trn^? =>
     _message_parser.read(buffer, protocol_error)
+  
+  fun ref _add_to_message(frame: Frame) =>
+    _message_parser.add_to_message(frame)
+  
+  fun ref _take_message(): Message trn^ =>
+    _message_parser.take_message()

@@ -10,6 +10,13 @@ interface Command
 type CommandMetadata is Map[String, String]
 
 class CommandUtil
+  fun tag read_string_as_metadata(metadata: CommandMetadata, string: String) =>
+    let bytes = recover trn Array[U8] end
+    for byte in string.values() do
+      bytes.push(byte)
+    end
+    read_bytes_as_metadata(metadata, consume bytes)
+  
   fun tag read_bytes_as_metadata(metadata: CommandMetadata, bytes: Array[U8] val) =>
     let buffer = _Buffer.append(bytes)
     if metadata.size() > 0 then metadata.clear() end
