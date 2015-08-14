@@ -1,4 +1,5 @@
 
+use net = "net"
 use "collections"
 
 type _Inspectable is Any box
@@ -78,6 +79,12 @@ primitive Inspect
       end
       output.push('}')
     | let x: Stringable box => output.append(x.string())
+    | let x: net.Buffer box =>
+      let ary = Array[U8]
+      for i in Range(0, x.size()) do
+        ary.push(try x.peek_u8(i) else 0 end)
+      end
+      output.append(apply(ary))
     else
       return "<uninspectable>"
     end
