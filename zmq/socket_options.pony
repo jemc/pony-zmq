@@ -24,9 +24,10 @@ interface SocketOption[A: SocketOptionValue] tag
     try
       var iter = list.values()
       while iter.has_next() do
-        var optval = iter.next() as _SocketOptionWithValue[A]
-        if optval.option_tag() is this then
-          return optval.value as A
+        try var optval = iter.next() as _SocketOptionWithValue[A]
+          if optval.option_tag() is this then
+            return optval.value
+          end
         end
       end
       error

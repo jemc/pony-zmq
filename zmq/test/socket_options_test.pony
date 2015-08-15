@@ -40,4 +40,10 @@ class SocketOptionsTest is UnitTest
     h.expect_false(zmq.CurveSecretKey.set_in(socket_opts, "not_a_key"))
     h.expect_eq[U64](socket_opts.size(), 2)
     
+    // Set and find a boolean option.
+    h.expect_false(zmq.CurveAsServer.find_in(socket_opts))
+    h.expect_true(zmq.CurveAsServer.set_in(socket_opts, true))
+    h.expect_true(zmq.CurveAsServer.find_in(socket_opts))
+    h.expect_eq[U64](socket_opts.size(), 3)
+    
     true
