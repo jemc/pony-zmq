@@ -153,35 +153,11 @@ class ProtocolAuthCurveClient is Protocol
     end
   
   fun ref _make_message_writex(): MessageWriteTransform iso^ =>
-    let st_pk = _st_pk
-    let ct_sk = _ct_sk
+    let pk = _st_pk
+    let sk = _ct_sk
+    // TODO: make the new local _nonce_gen unusable (to avoid dups with moved one)
     let nonce_gen: _CurveNonceGenerator iso = _nonce_gen = _CurveNonceGenerator
     
     recover
-      lambda(st_pk: CryptoBoxPublicKey, ct_sk: CryptoBoxSecretKey,
-        nonce_gen: _CurveNonceGenerator iso^, message: Message box
-      ): Array[U8] val =>
-        let output = recover trn Array[U8] end
-        
-        for node in message.nodes() do
-          let frame': (Frame | None) = try node() else None end
-          
-          match frame' | let frame: Frame =>
-            let message_box = CommandAuthCurveMessageBox
-            message_box.has_more = node.has_next()
-            message_box.payload = frame
-            
-            let command = CommandAuthCurveMessage
-            let short_nonce = nonce_gen.next_short()
-            let nonce = CryptoBoxNonce("CurveZMQMESSAGEC" + short_nonce)
-            command.short_nonce = short_nonce
-            command.data_box = try CryptoBox(message_box.string(), nonce, st_pk, ct_sk) else
-                                 ""  // TODO: some way to protocol-error from here?
-                               end
-            output.append(CommandParser.write(command))
-          end
-        end
-        
-        output
-      end~apply(st_pk, ct_sk, consume nonce_gen)
+      _CurveUtil~message_writex(pk, sk, consume nonce_gen, "CurveZMQMESSAGEC")
     end
