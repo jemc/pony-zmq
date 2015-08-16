@@ -43,11 +43,11 @@ primitive Inspect
           elseif byte < 0x20 then
             output.append("0x" + byte.string(IntHexBare))
           elseif byte < 0x7F then
-            output.append("'")
+            output.append(" '")
             output.push(byte)
             output.append("'")
           else
-            output.append("0x" + byte.string(IntHexBare) + " ")
+            output.append("0x" + byte.string(IntHexBare))
           end
           if iter.has_next() then output.append(", ") end
         end
