@@ -15,23 +15,23 @@ type _ProtocolAuthCurveClientState is
 // TODO: improve performance with CryptoBox precomputation after handshake.
 class ProtocolAuthCurveClient is Protocol
   let _session: Session
-  let _pk: CryptoBoxPublicKey
-  let _sk: CryptoBoxSecretKey
-  let _pks: CryptoBoxPublicKey
-  let _tpk: CryptoBoxPublicKey
-  let _tsk: CryptoBoxSecretKey
-  var _tpks: CryptoBoxPublicKey = CryptoBoxPublicKey("")
+  let _c_pk: CryptoBoxPublicKey
+  let _c_sk: CryptoBoxSecretKey
+  let _s_pk: CryptoBoxPublicKey
+  let _ct_pk: CryptoBoxPublicKey
+  let _ct_sk: CryptoBoxSecretKey
+  var _st_pk: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   
   var _state: _ProtocolAuthCurveClientState = _ProtocolAuthCurveClientStateReadGreeting
   var _nonce_gen: _CurveNonceGenerator iso = _nonce_gen.create()
   
-  new create(session: Session, pk: CryptoBoxPublicKey, sk: CryptoBoxSecretKey, pks: CryptoBoxPublicKey) =>
+  new create(session: Session, c_pk: CryptoBoxPublicKey, c_sk: CryptoBoxSecretKey, s_pk: CryptoBoxPublicKey) =>
     _session = session
-    _pk = pk
-    _sk = sk
-    _pks = pks
-    (_tpk, _tsk) = try CryptoBox.keypair()
-                   else (CryptoBoxPublicKey(""), CryptoBoxSecretKey("")) end
+    _c_pk = c_pk
+    _c_sk = c_sk
+    _s_pk = s_pk
+    (_ct_pk, _ct_sk) = try CryptoBox.keypair()
+                       else (CryptoBoxPublicKey(""), CryptoBoxSecretKey("")) end
   
   fun ref _next_state(state: _ProtocolAuthCurveClientState) =>
     _state = state
@@ -67,9 +67,9 @@ class ProtocolAuthCurveClient is Protocol
                     "\x00\x00\x00\x00\x00\x00\x00\x00" +
                     "\x00\x00\x00\x00\x00\x00\x00\x00" +
                     "\x00\x00\x00\x00\x00\x00\x00\x00"
-    command.tpkc          = _tpk
+    command.ct_pk         = _ct_pk
     command.short_nonce   = short_nonce
-    command.signature_box = try CryptoBox(signature, nonce, _pks, _tsk) else
+    command.signature_box = try CryptoBox(signature, nonce, _s_pk, _ct_sk) else
                               _session.protocol_error("couldn't encode HELLO box")
                               error
                             end
@@ -79,26 +79,26 @@ class ProtocolAuthCurveClient is Protocol
     // TODO: possibility of receiving ERROR command here.
     let command = _session._read_specific_command[CommandAuthCurveWelcome](buffer)
     let nonce = CryptoBoxNonce("WELCOME-" + command.long_nonce)
-    let data = try CryptoBox.open(command.data_box, nonce, _pks, _tsk) else
+    let data = try CryptoBox.open(command.data_box, nonce, _s_pk, _ct_sk) else
                  _session.protocol_error("couldn't open WELCOME box")
                  error
                end
     let welcome_box = CommandAuthCurveWelcomeBox(data)
-    _tpks = welcome_box.tpks
+    _st_pk = welcome_box.st_pk
     _next_state(_ProtocolAuthCurveClientStateReadHandshakeReady)
     _write_initiate(welcome_box.cookie)
   
   fun ref _write_initiate(cookie: String)? =>
     let vouch_box = CommandAuthCurveInitiateVouchBox
-    vouch_box.tpkc = _tpk
-    vouch_box.pks = _pks
+    vouch_box.ct_pk = _ct_pk
+    vouch_box.s_pk = _s_pk
     
     let initiate_box: CommandAuthCurveInitiateBox ref = CommandAuthCurveInitiateBox
     let vouch_long_nonce = _nonce_gen.next_long()
     let vouch_nonce = CryptoBoxNonce("VOUCH---" + vouch_long_nonce)
-    initiate_box.pkc = _pk
+    initiate_box.c_pk = _c_pk
     initiate_box.long_nonce = vouch_long_nonce
-    initiate_box.vouch_box = try CryptoBox(vouch_box.string(), vouch_nonce, _tpks, _sk) else
+    initiate_box.vouch_box = try CryptoBox(vouch_box.string(), vouch_nonce, _st_pk, _c_sk) else
                                _session.protocol_error("couldn't encode INITIATE vouch box")
                                error
                              end
@@ -109,7 +109,7 @@ class ProtocolAuthCurveClient is Protocol
     let nonce = CryptoBoxNonce("CurveZMQINITIATE" + short_nonce)
     command.cookie = cookie
     command.short_nonce = short_nonce
-    command.data_box = try CryptoBox(initiate_box.string(), nonce, _tpks, _tsk) else
+    command.data_box = try CryptoBox(initiate_box.string(), nonce, _st_pk, _ct_sk) else
                          _session.protocol_error("couldn't encode INITIATE box")
                          error
                        end
@@ -120,7 +120,7 @@ class ProtocolAuthCurveClient is Protocol
     let command = _session._read_specific_command[CommandAuthCurveReady](buffer)
     // TODO: validate that server's short nonces increment as per spec.
     let nonce = CryptoBoxNonce("CurveZMQREADY---" + command.short_nonce)
-    let data = try CryptoBox.open(command.data_box, nonce, _tpks, _tsk) else
+    let data = try CryptoBox.open(command.data_box, nonce, _st_pk, _ct_sk) else
                  _session.protocol_error("couldn't open READY box")
                  error
                end
@@ -141,7 +141,7 @@ class ProtocolAuthCurveClient is Protocol
     let command = _session._read_specific_command[CommandAuthCurveMessage](buffer)
     // TODO: validate that server's short nonces increment as per spec.
     let nonce = CryptoBoxNonce("CurveZMQMESSAGES" + command.short_nonce)
-    let data = try CryptoBox.open(command.data_box, nonce, _tpks, _tsk) else
+    let data = try CryptoBox.open(command.data_box, nonce, _st_pk, _ct_sk) else
                  _session.protocol_error("couldn't open MESSAGE box")
                  error
                end
@@ -153,12 +153,12 @@ class ProtocolAuthCurveClient is Protocol
     end
   
   fun ref _make_message_writex(): MessageWriteTransform iso^ =>
-    let tpks = _tpks
-    let tsk = _tsk
+    let st_pk = _st_pk
+    let ct_sk = _ct_sk
     let nonce_gen: _CurveNonceGenerator iso = _nonce_gen = _CurveNonceGenerator
     
     recover
-      lambda(tpks: CryptoBoxPublicKey, tsk: CryptoBoxSecretKey,
+      lambda(st_pk: CryptoBoxPublicKey, ct_sk: CryptoBoxSecretKey,
         nonce_gen: _CurveNonceGenerator iso^, message: Message box
       ): Array[U8] val =>
         let output = recover trn Array[U8] end
@@ -175,7 +175,7 @@ class ProtocolAuthCurveClient is Protocol
             let short_nonce = nonce_gen.next_short()
             let nonce = CryptoBoxNonce("CurveZMQMESSAGEC" + short_nonce)
             command.short_nonce = short_nonce
-            command.data_box = try CryptoBox(message_box.string(), nonce, tpks, tsk) else
+            command.data_box = try CryptoBox(message_box.string(), nonce, st_pk, ct_sk) else
                                  ""  // TODO: some way to protocol-error from here?
                                end
             output.append(CommandParser.write(command))
@@ -183,5 +183,5 @@ class ProtocolAuthCurveClient is Protocol
         end
         
         output
-      end~apply(tpks, tsk, consume nonce_gen)
+      end~apply(st_pk, ct_sk, consume nonce_gen)
     end
