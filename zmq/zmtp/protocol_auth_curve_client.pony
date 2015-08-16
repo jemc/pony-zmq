@@ -12,6 +12,7 @@ type _ProtocolAuthCurveClientState is
   | _ProtocolAuthCurveClientStateReadHandshakeReady
   | _ProtocolAuthCurveClientStateReadMessage)
 
+// TODO: improve performance with CryptoBox precomputation after handshake.
 class ProtocolAuthCurveClient is Protocol
   let _session: Session
   let _pk: CryptoBoxPublicKey
