@@ -20,6 +20,7 @@ class ProtocolAuthCurveServer is Protocol
   let _tsk: CryptoBoxSecretKey
   var _tpkc: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   var _pkc: CryptoBoxPublicKey = CryptoBoxPublicKey("")
+  var _cookie_key: CryptoSecretBoxKey = CryptoSecretBoxKey("")
   
   var _state: _ProtocolAuthCurveServerState = _ProtocolAuthCurveServerStateReadGreeting
   var _nonce_gen: _NonceGenerator iso = _nonce_gen.create()
@@ -33,15 +34,6 @@ class ProtocolAuthCurveServer is Protocol
   
   fun ref _next_state(state: _ProtocolAuthCurveServerState) =>
     _state = state
-  
-  fun _make_cookie(): String =>
-    // TODO: real cookie
-    recover String.append([as U8: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]) end
   
   fun ref handle_input(buffer: _Buffer ref) =>
     try while true do
@@ -82,9 +74,13 @@ class ProtocolAuthCurveServer is Protocol
     _write_welcome()
   
   fun ref _write_welcome()? =>
+    _cookie_key = CryptoSecretBox.key()
+    let cookie_nonce = _nonce_gen.next_long()
     let welcome_box = CommandAuthCurveWelcomeBox
     welcome_box.tpks = _tpk
-    welcome_box.cookie = _make_cookie()
+    welcome_box.cookie = cookie_nonce +
+      CryptoSecretBox(_tpkc.string() + _tsk.string(),
+        CryptoSecretBoxNonce("COOKIE--" + cookie_nonce), _cookie_key)
     
     let command = CommandAuthCurveWelcome
     let long_nonce = _nonce_gen.next_long()
@@ -99,10 +95,18 @@ class ProtocolAuthCurveServer is Protocol
   fun ref _read_initiate(buffer: _Buffer ref)? =>
     let command = _session._read_specific_command[CommandAuthCurveInitiate](buffer)
     
-    if command.cookie != _make_cookie() then
+    let cookie = try CryptoSecretBox.open(command.cookie.substring(16, -1),
+                       CryptoSecretBoxNonce("COOKIE--" + command.cookie.substring(0, 15)),
+                         _cookie_key) else
+                   _session.protocol_error("couldn't open INITIATE cookie box")
+                   error
+                 end
+    if (cookie.substring(0, 31) != _tpkc.string())
+    or (cookie.substring(32, 63) != _tsk.string()) then
       _session.protocol_error("got incorrect INITIATE cookie")
       error
     end
+    _cookie_key = CryptoSecretBoxKey("") // forget cookie key
     
     // TODO: verify incrementing short nonces
     let nonce = CryptoBoxNonce("CurveZMQINITIATE" + command.short_nonce)
