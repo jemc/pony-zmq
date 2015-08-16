@@ -66,7 +66,7 @@ class ProtocolAuthCurveClient is Protocol
                     "\x00\x00\x00\x00\x00\x00\x00\x00" +
                     "\x00\x00\x00\x00\x00\x00\x00\x00" +
                     "\x00\x00\x00\x00\x00\x00\x00\x00"
-    command.tpk           = _tpk
+    command.tpkc          = _tpk
     command.short_nonce   = short_nonce
     command.signature_box = try CryptoBox(signature, nonce, _pks, _tsk) else
                               _session.protocol_error("couldn't encode HELLO box")
@@ -89,13 +89,13 @@ class ProtocolAuthCurveClient is Protocol
   
   fun ref _write_initiate(cookie: String)? =>
     let vouch_box = CommandAuthCurveInitiateVouchBox
-    vouch_box.tpk = _tpk
+    vouch_box.tpkc = _tpk
     vouch_box.pks = _pks
     
     let initiate_box: CommandAuthCurveInitiateBox ref = CommandAuthCurveInitiateBox
-    let vouch_long_nonce = recover val CryptoBox.random_bytes(16) end
+    let vouch_long_nonce = _nonce_gen.next_long()
     let vouch_nonce = CryptoBoxNonce("VOUCH---" + vouch_long_nonce)
-    initiate_box.pk = _pk
+    initiate_box.pkc = _pk
     initiate_box.long_nonce = vouch_long_nonce
     initiate_box.vouch_box = try CryptoBox(vouch_box.string(), vouch_nonce, _tpks, _sk) else
                                _session.protocol_error("couldn't encode INITIATE vouch box")

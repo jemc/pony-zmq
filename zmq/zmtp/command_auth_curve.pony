@@ -5,7 +5,7 @@ use "../../../pony-sodium/sodium"
 class CommandAuthCurveHello is Command
   var version_major: U8 = 1
   var version_minor: U8 = 0
-  var tpk: CryptoBoxPublicKey = CryptoBoxPublicKey("")
+  var tpkc: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   var short_nonce: String = ""
   var signature_box: String = ""
   
@@ -20,7 +20,7 @@ class CommandAuthCurveHello is Command
                                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] end)
-    output.append(tpk.string())
+    output.append(tpkc.string())
     output.append(short_nonce)
     output.append(signature_box)
     output
@@ -33,7 +33,7 @@ class CommandAuthCurveHello is Command
     version_major = buffer.u8()
     version_minor = buffer.u8()
     buffer.skip(72) // anti-amplification padding
-    tpk = CryptoBoxPublicKey(recover String.append(buffer.block(32)) end)
+    tpkc = CryptoBoxPublicKey(recover String.append(buffer.block(32)) end)
     short_nonce = recover String.append(buffer.block(8)) end
     signature_box = recover String.append(buffer.block(80)) end
 
@@ -80,7 +80,7 @@ class CommandAuthCurveInitiate is Command
     
     cookie = recover String.append(buffer.block(96)) end
     short_nonce = recover String.append(buffer.block(8)) end
-    data_box = recover String.append(buffer.block(144)) end
+    data_box = recover String.append(buffer.block(buffer.size())) end
 
 class CommandAuthCurveReady is Command
   var short_nonce: String = ""
@@ -159,38 +159,38 @@ class CommandAuthCurveWelcomeBox
     this
 
 class CommandAuthCurveInitiateBox
-  var pk: CryptoBoxPublicKey = CryptoBoxPublicKey("")
+  var pkc: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   var long_nonce: String = ""
   var vouch_box: String = ""
   let metadata: CommandMetadata = metadata.create()
   
   fun string(): String =>
     let output = recover trn String end
-    output.append(pk.string())
+    output.append(pkc.string())
     output.append(long_nonce)
     output.append(vouch_box)
     output.append(CommandUtil.write_bytes_as_metadata(metadata))
     output
   
   fun ref apply(data: String): CommandAuthCurveInitiateBox =>
-    pk = CryptoBoxPublicKey(data.substring(0, 31))
+    pkc = CryptoBoxPublicKey(data.substring(0, 31))
     long_nonce = data.substring(32, 47)
     vouch_box = data.substring(48, 127)
     CommandUtil.read_string_as_metadata(metadata, data.substring(128, -1))
     this
 
 class CommandAuthCurveInitiateVouchBox
-  var tpk: CryptoBoxPublicKey = CryptoBoxPublicKey("")
+  var tpkc: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   var pks: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   
   fun string(): String =>
     let output = recover trn String end
-    output.append(tpk.string())
+    output.append(tpkc.string())
     output.append(pks.string())
     output
   
   fun ref apply(data: String): CommandAuthCurveInitiateVouchBox =>
-    tpk = CryptoBoxPublicKey(data.substring(0, 31))
+    tpkc = CryptoBoxPublicKey(data.substring(0, 31))
     pks = CryptoBoxPublicKey(data.substring(32, 63))
     this
 

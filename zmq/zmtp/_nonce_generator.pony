@@ -1,4 +1,6 @@
 
+use "../../../pony-sodium/sodium"
+
 class _NonceGenerator
   var _next_short: U64 = 1
   
@@ -16,3 +18,6 @@ class _NonceGenerator
     out.push((_next_short >>  0).u8())
     _next_short = _next_short + 1 // TODO: reconnect on overflow
     consume out
+  
+  fun tag next_long(): String =>
+    recover CryptoBox.random_bytes(16) end
