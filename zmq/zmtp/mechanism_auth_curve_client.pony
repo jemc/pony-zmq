@@ -4,19 +4,19 @@
 
 use "../../../pony-sodium/sodium"
 
-primitive _ProtocolAuthCurveClientStateReadGreeting
-primitive _ProtocolAuthCurveClientStateReadHandshakeWelcome
-primitive _ProtocolAuthCurveClientStateReadHandshakeReady
-primitive _ProtocolAuthCurveClientStateReadMessage
+primitive _MechanismAuthCurveClientStateReadGreeting
+primitive _MechanismAuthCurveClientStateReadHandshakeWelcome
+primitive _MechanismAuthCurveClientStateReadHandshakeReady
+primitive _MechanismAuthCurveClientStateReadMessage
 
-type _ProtocolAuthCurveClientState is
-  ( _ProtocolAuthCurveClientStateReadGreeting
-  | _ProtocolAuthCurveClientStateReadHandshakeWelcome
-  | _ProtocolAuthCurveClientStateReadHandshakeReady
-  | _ProtocolAuthCurveClientStateReadMessage)
+type _MechanismAuthCurveClientState is
+  ( _MechanismAuthCurveClientStateReadGreeting
+  | _MechanismAuthCurveClientStateReadHandshakeWelcome
+  | _MechanismAuthCurveClientStateReadHandshakeReady
+  | _MechanismAuthCurveClientStateReadMessage)
 
 // TODO: improve performance with CryptoBox precomputation after handshake.
-class ProtocolAuthCurveClient is Protocol
+class MechanismAuthCurveClient is Mechanism
   let _session: Session
   let _c_pk: CryptoBoxPublicKey
   let _c_sk: CryptoBoxSecretKey
@@ -25,7 +25,7 @@ class ProtocolAuthCurveClient is Protocol
   let _ct_sk: CryptoBoxSecretKey
   var _st_pk: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   
-  var _state: _ProtocolAuthCurveClientState = _ProtocolAuthCurveClientStateReadGreeting
+  var _state: _MechanismAuthCurveClientState = _MechanismAuthCurveClientStateReadGreeting
   var _nonce_gen: _CurveNonceGenerator iso = _nonce_gen.create()
   
   new create(session: Session, c_pk: CryptoBoxPublicKey, c_sk: CryptoBoxSecretKey, s_pk: CryptoBoxPublicKey) =>
@@ -36,26 +36,26 @@ class ProtocolAuthCurveClient is Protocol
     (_ct_pk, _ct_sk) = try CryptoBox.keypair()
                        else (CryptoBoxPublicKey(""), CryptoBoxSecretKey("")) end
   
-  fun ref _next_state(state: _ProtocolAuthCurveClientState) =>
+  fun ref _next_state(state: _MechanismAuthCurveClientState) =>
     _state = state
   
   fun ref handle_input(buffer: _Buffer ref) =>
     try while true do
       match _state
-      | _ProtocolAuthCurveClientStateReadGreeting         => _read_greeting(buffer)
-      | _ProtocolAuthCurveClientStateReadHandshakeWelcome => _read_welcome(buffer)
-      | _ProtocolAuthCurveClientStateReadHandshakeReady   => _read_ready(buffer)
-      | _ProtocolAuthCurveClientStateReadMessage          => _read_message(buffer)
+      | _MechanismAuthCurveClientStateReadGreeting         => _read_greeting(buffer)
+      | _MechanismAuthCurveClientStateReadHandshakeWelcome => _read_welcome(buffer)
+      | _MechanismAuthCurveClientStateReadHandshakeReady   => _read_ready(buffer)
+      | _MechanismAuthCurveClientStateReadMessage          => _read_message(buffer)
       end
     end end
   
   fun ref handle_start() =>
-    _next_state(_ProtocolAuthCurveClientStateReadGreeting)
+    _next_state(_MechanismAuthCurveClientStateReadGreeting)
     _session._write_greeting()
   
   fun ref _read_greeting(buffer: _Buffer ref)? =>
     _session._read_greeting(buffer)
-    _next_state(_ProtocolAuthCurveClientStateReadHandshakeWelcome)
+    _next_state(_MechanismAuthCurveClientStateReadHandshakeWelcome)
     _write_hello()
   
   fun ref _write_hello()? =>
@@ -88,7 +88,7 @@ class ProtocolAuthCurveClient is Protocol
                end
     let welcome_box = CommandAuthCurveWelcomeBox(data)
     _st_pk = welcome_box.st_pk
-    _next_state(_ProtocolAuthCurveClientStateReadHandshakeReady)
+    _next_state(_MechanismAuthCurveClientStateReadHandshakeReady)
     _write_initiate(welcome_box.cookie)
   
   fun ref _write_initiate(cookie: String)? =>
@@ -137,7 +137,7 @@ class ProtocolAuthCurveClient is Protocol
     end
     
     _session.activated(_make_message_writex())
-    _next_state(_ProtocolAuthCurveClientStateReadMessage)
+    _next_state(_MechanismAuthCurveClientStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref)? =>
     // TODO: possibility of receiving ERROR command here.

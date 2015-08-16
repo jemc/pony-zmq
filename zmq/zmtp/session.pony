@@ -29,7 +29,7 @@ class _SessionKeeperNone is _SessionKeeper
 
 class Session
   var keeper: _SessionKeeper = _SessionKeeperNone
-  var _protocol: Protocol = ProtocolNone
+  var _mechanism: Mechanism = MechanismNone
   
   var activated:      SessionHandleActivated     = SessionHandleActivatedNone
   var protocol_error: SessionHandleProtocolError = SessionHandleProtocolErrorNone
@@ -40,7 +40,7 @@ class Session
   
   fun ref start(
     session_keeper: _SessionKeeper,
-    protocol: Protocol,
+    mechanism: Mechanism,
     handle_activated:      SessionHandleActivated,
     handle_protocol_error: SessionHandleProtocolError,
     handle_write:          SessionHandleWrite,
@@ -51,14 +51,14 @@ class Session
     write          = handle_write
     received       = handle_received
     keeper = session_keeper
-    _protocol = protocol
-    _protocol.handle_start()
+    _mechanism = mechanism
+    _mechanism.handle_start()
   
   fun ref handle_input(buffer: _Buffer ref) =>
-    _protocol.handle_input(buffer)
+    _mechanism.handle_input(buffer)
   
   ///
-  // Convenience methods for use by Protocols
+  // Convenience methods for use by Mechanisms
   
   fun ref _write_greeting() =>
     write(Greeting.write(keeper.auth_mechanism(), keeper.as_server()))

@@ -4,19 +4,19 @@
 
 use "../../../pony-sodium/sodium"
 
-primitive _ProtocolAuthCurveServerStateReadGreeting
-primitive _ProtocolAuthCurveServerStateReadHandshakeHello
-primitive _ProtocolAuthCurveServerStateReadHandshakeInitiate
-primitive _ProtocolAuthCurveServerStateReadMessage
+primitive _MechanismAuthCurveServerStateReadGreeting
+primitive _MechanismAuthCurveServerStateReadHandshakeHello
+primitive _MechanismAuthCurveServerStateReadHandshakeInitiate
+primitive _MechanismAuthCurveServerStateReadMessage
 
-type _ProtocolAuthCurveServerState is
-  ( _ProtocolAuthCurveServerStateReadGreeting
-  | _ProtocolAuthCurveServerStateReadHandshakeHello
-  | _ProtocolAuthCurveServerStateReadHandshakeInitiate
-  | _ProtocolAuthCurveServerStateReadMessage)
+type _MechanismAuthCurveServerState is
+  ( _MechanismAuthCurveServerStateReadGreeting
+  | _MechanismAuthCurveServerStateReadHandshakeHello
+  | _MechanismAuthCurveServerStateReadHandshakeInitiate
+  | _MechanismAuthCurveServerStateReadMessage)
 
 // TODO: improve performance with CryptoBox precomputation after handshake.
-class ProtocolAuthCurveServer is Protocol
+class MechanismAuthCurveServer is Mechanism
   let _session: Session
   let _s_pk: CryptoBoxPublicKey
   let _s_sk: CryptoBoxSecretKey
@@ -26,7 +26,7 @@ class ProtocolAuthCurveServer is Protocol
   var _c_pk: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   var _cookie_key: CryptoSecretBoxKey = CryptoSecretBoxKey("")
   
-  var _state: _ProtocolAuthCurveServerState = _ProtocolAuthCurveServerStateReadGreeting
+  var _state: _MechanismAuthCurveServerState = _MechanismAuthCurveServerStateReadGreeting
   var _nonce_gen: _CurveNonceGenerator iso = _nonce_gen.create()
   
   new create(session: Session, s_pk: CryptoBoxPublicKey, s_sk: CryptoBoxSecretKey) =>
@@ -36,26 +36,26 @@ class ProtocolAuthCurveServer is Protocol
     (_st_pk, _st_sk) = try CryptoBox.keypair()
                    else (CryptoBoxPublicKey(""), CryptoBoxSecretKey("")) end
   
-  fun ref _next_state(state: _ProtocolAuthCurveServerState) =>
+  fun ref _next_state(state: _MechanismAuthCurveServerState) =>
     _state = state
   
   fun ref handle_input(buffer: _Buffer ref) =>
     try while true do
       match _state
-      | _ProtocolAuthCurveServerStateReadGreeting          => _read_greeting(buffer)
-      | _ProtocolAuthCurveServerStateReadHandshakeHello    => _read_hello(buffer)
-      | _ProtocolAuthCurveServerStateReadHandshakeInitiate => _read_initiate(buffer)
-      | _ProtocolAuthCurveServerStateReadMessage           => _read_message(buffer)
+      | _MechanismAuthCurveServerStateReadGreeting          => _read_greeting(buffer)
+      | _MechanismAuthCurveServerStateReadHandshakeHello    => _read_hello(buffer)
+      | _MechanismAuthCurveServerStateReadHandshakeInitiate => _read_initiate(buffer)
+      | _MechanismAuthCurveServerStateReadMessage           => _read_message(buffer)
       end
     end end
   
   fun ref handle_start() =>
-    _next_state(_ProtocolAuthCurveServerStateReadGreeting)
+    _next_state(_MechanismAuthCurveServerStateReadGreeting)
     _session._write_greeting()
   
   fun ref _read_greeting(buffer: _Buffer ref)? =>
     _session._read_greeting(buffer)
-    _next_state(_ProtocolAuthCurveServerStateReadHandshakeHello)
+    _next_state(_MechanismAuthCurveServerStateReadHandshakeHello)
   
   fun ref _read_hello(buffer: _Buffer ref)? =>
     let command = _session._read_specific_command[CommandAuthCurveHello](buffer)
@@ -74,7 +74,7 @@ class ProtocolAuthCurveServer is Protocol
                  error
                end
     
-    _next_state(_ProtocolAuthCurveServerStateReadHandshakeInitiate)
+    _next_state(_MechanismAuthCurveServerStateReadHandshakeInitiate)
     _write_welcome()
   
   fun ref _write_welcome()? =>
@@ -159,7 +159,7 @@ class ProtocolAuthCurveServer is Protocol
     _session._write_command(command)
     
     _session.activated(_make_message_writex())
-    _next_state(_ProtocolAuthCurveServerStateReadMessage)
+    _next_state(_MechanismAuthCurveServerStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref)? =>
     let command = _session._read_specific_command[CommandAuthCurveMessage](buffer)

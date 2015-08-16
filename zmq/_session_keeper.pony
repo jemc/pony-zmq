@@ -31,7 +31,7 @@ class _SessionKeeper
     _buffer.clear()
     _session.start(where
       session_keeper = this,
-      protocol = _make_protocol(),
+      mechanism = _make_mechanism(),
       handle_activated      = handle_activated,
       handle_protocol_error = handle_protocol_error,
       handle_write          = handle_write,
@@ -45,22 +45,22 @@ class _SessionKeeper
     else error
     end
   
-  fun ref _make_curve_protocol(): zmtp.Protocol? =>
+  fun ref _make_curve_mechanism(): zmtp.Mechanism? =>
     let pk = CryptoBoxPublicKey(_make_curve_key(
                CurvePublicKey.find_in(_socket_opts)))
     let sk = CryptoBoxSecretKey(_make_curve_key(
                CurveSecretKey.find_in(_socket_opts)))
     if CurveAsServer.find_in(_socket_opts) then
-      return zmtp.ProtocolAuthCurveServer(_session, pk, sk)
+      return zmtp.MechanismAuthCurveServer(_session, pk, sk)
     else
       let pks = CryptoBoxPublicKey(_make_curve_key(
                   CurvePublicKeyOfServer.find_in(_socket_opts)))
-      return zmtp.ProtocolAuthCurveClient(_session, pk, sk, pks)
+      return zmtp.MechanismAuthCurveClient(_session, pk, sk, pks)
     end
   
-  fun ref _make_protocol(): zmtp.Protocol =>
-    try _make_curve_protocol()
-    else zmtp.ProtocolAuthNull.create(_session)
+  fun ref _make_mechanism(): zmtp.Mechanism =>
+    try _make_curve_mechanism()
+    else zmtp.MechanismAuthNull.create(_session)
     end
   
   fun ref handle_input(data: Array[U8] iso) =>

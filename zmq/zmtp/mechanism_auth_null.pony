@@ -2,36 +2,36 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-primitive _ProtocolAuthNullStateReadGreeting
-primitive _ProtocolAuthNullStateReadHandshakeReady
-primitive _ProtocolAuthNullStateReadMessage
+primitive _MechanismAuthNullStateReadGreeting
+primitive _MechanismAuthNullStateReadHandshakeReady
+primitive _MechanismAuthNullStateReadMessage
 
-type _ProtocolAuthNullState is
-  ( _ProtocolAuthNullStateReadGreeting
-  | _ProtocolAuthNullStateReadHandshakeReady
-  | _ProtocolAuthNullStateReadMessage)
+type _MechanismAuthNullState is
+  ( _MechanismAuthNullStateReadGreeting
+  | _MechanismAuthNullStateReadHandshakeReady
+  | _MechanismAuthNullStateReadMessage)
 
-class ProtocolAuthNull is Protocol
+class MechanismAuthNull is Mechanism
   let _session: Session
-  var _state: _ProtocolAuthNullState = _ProtocolAuthNullStateReadGreeting
+  var _state: _MechanismAuthNullState = _MechanismAuthNullStateReadGreeting
   
   new create(session: Session) =>
     _session = session
   
-  fun ref _next_state(state: _ProtocolAuthNullState) =>
+  fun ref _next_state(state: _MechanismAuthNullState) =>
     _state = state
   
   fun ref handle_input(buffer: _Buffer ref) =>
     try while true do
       match _state
-      | _ProtocolAuthNullStateReadGreeting       => _read_greeting(buffer)
-      | _ProtocolAuthNullStateReadHandshakeReady => _read_ready_command(buffer)
-      | _ProtocolAuthNullStateReadMessage        => _read_message(buffer)
+      | _MechanismAuthNullStateReadGreeting       => _read_greeting(buffer)
+      | _MechanismAuthNullStateReadHandshakeReady => _read_ready_command(buffer)
+      | _MechanismAuthNullStateReadMessage        => _read_message(buffer)
       end
     end end
   
   fun ref handle_start() =>
-    _next_state(_ProtocolAuthNullStateReadGreeting)
+    _next_state(_MechanismAuthNullStateReadGreeting)
     _session._write_greeting()
   
   fun ref _write_greeting() =>
@@ -39,7 +39,7 @@ class ProtocolAuthNull is Protocol
   
   fun ref _read_greeting(buffer: _Buffer ref)? =>
     _session._read_greeting(buffer)
-    _next_state(_ProtocolAuthNullStateReadHandshakeReady)
+    _next_state(_MechanismAuthNullStateReadHandshakeReady)
     _write_ready_command()
   
   fun ref _write_ready_command() =>
@@ -58,8 +58,8 @@ class ProtocolAuthNull is Protocol
     end
     
     _session.activated(recover MessageParser~write() end)
-    _next_state(_ProtocolAuthNullStateReadMessage)
+    _next_state(_MechanismAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref) ? =>
     _session.received(_session._read_message(buffer))
-    _next_state(_ProtocolAuthNullStateReadMessage)
+    _next_state(_MechanismAuthNullStateReadMessage)
