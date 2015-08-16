@@ -23,7 +23,7 @@ class ProtocolAuthCurveServer is Protocol
   var _cookie_key: CryptoSecretBoxKey = CryptoSecretBoxKey("")
   
   var _state: _ProtocolAuthCurveServerState = _ProtocolAuthCurveServerStateReadGreeting
-  var _nonce_gen: _NonceGenerator iso = _nonce_gen.create()
+  var _nonce_gen: _CurveNonceGenerator iso = _nonce_gen.create()
   
   new create(session: Session, pk: CryptoBoxPublicKey, sk: CryptoBoxSecretKey) =>
     _session = session
@@ -177,11 +177,11 @@ class ProtocolAuthCurveServer is Protocol
     let tpkc = _tpkc
     let tsk = _tsk
     // TODO: initialize the new nonce gen at the same state as the current
-    let nonce_gen: _NonceGenerator iso = _nonce_gen = _NonceGenerator
+    let nonce_gen: _CurveNonceGenerator iso = _nonce_gen = _CurveNonceGenerator
     
     recover
       lambda(tpkc: CryptoBoxPublicKey, tsk: CryptoBoxSecretKey,
-        nonce_gen: _NonceGenerator iso^, message: Message box
+        nonce_gen: _CurveNonceGenerator iso^, message: Message box
       ): Array[U8] val =>
         let output = recover trn Array[U8] end
         

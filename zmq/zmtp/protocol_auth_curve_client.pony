@@ -22,7 +22,7 @@ class ProtocolAuthCurveClient is Protocol
   var _tpks: CryptoBoxPublicKey = CryptoBoxPublicKey("")
   
   var _state: _ProtocolAuthCurveClientState = _ProtocolAuthCurveClientStateReadGreeting
-  var _nonce_gen: _NonceGenerator iso = _nonce_gen.create()
+  var _nonce_gen: _CurveNonceGenerator iso = _nonce_gen.create()
   
   new create(session: Session, pk: CryptoBoxPublicKey, sk: CryptoBoxSecretKey, pks: CryptoBoxPublicKey) =>
     _session = session
@@ -154,11 +154,11 @@ class ProtocolAuthCurveClient is Protocol
   fun ref _make_message_writex(): MessageWriteTransform iso^ =>
     let tpks = _tpks
     let tsk = _tsk
-    let nonce_gen: _NonceGenerator iso = _nonce_gen = _NonceGenerator
+    let nonce_gen: _CurveNonceGenerator iso = _nonce_gen = _CurveNonceGenerator
     
     recover
       lambda(tpks: CryptoBoxPublicKey, tsk: CryptoBoxSecretKey,
-        nonce_gen: _NonceGenerator iso^, message: Message box
+        nonce_gen: _CurveNonceGenerator iso^, message: Message box
       ): Array[U8] val =>
         let output = recover trn Array[U8] end
         

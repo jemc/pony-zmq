@@ -1,7 +1,7 @@
 
 use "../../../pony-sodium/sodium"
 
-class _NonceGenerator
+class _CurveNonceGenerator
   var _next_short: U64 = 1
   
   new iso create() => None
