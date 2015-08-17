@@ -27,9 +27,18 @@ actor Socket
   let _socket_type: SocketType
   let _socket_opts: SocketOptions = _socket_opts.create()
   
+  let _handle_in:  _HandleIncoming
+  let _handle_out: _HandleOutgoing
+  let _observe_in:  _ObserveIncoming
+  let _observe_out: _ObserveOutgoing
+  
   new create(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone) =>
-    _socket_type = socket_type
     _notify = consume notify
+    _socket_type = socket_type
+    _handle_in = _socket_type.handle_incoming()
+    _handle_out = _socket_type.handle_outgoing()
+    _observe_in = _socket_type.observe_incoming()
+    _observe_out = _socket_type.observe_outgoing()
   
   be dispose() =>
     _timers.dispose()
@@ -99,7 +108,9 @@ actor Socket
     _maybe_send_messages()
   
   be _received(peer: _SocketPeer, message: Message) =>
-    _notify.received(this, consume message)
+    try _handle_in(peer, message)
+      _notify.received(this, consume message)
+    end
   
   be _connected_from_bind(bind': _SocketBind, peer: _SocketPeer) =>
     (try _bind_peers(bind') else
@@ -136,6 +147,7 @@ actor Socket
   
   fun ref _add_open_peer(peer: _SocketPeer) =>
     _open_peers.push(peer)
+    _handle_in.add_peer(peer)
   
   fun ref _lost_open_peer(peer: _SocketPeer) =>
     for node in _open_peers.nodes() do
