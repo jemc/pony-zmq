@@ -19,7 +19,6 @@ actor Socket
   let _peers:      Map[String, _SocketPeer]              = _peers.create()
   let _binds:      Map[String, _SocketBind]              = _binds.create()
   let _bind_peers: MapIs[_SocketBind, List[_SocketPeer]] = _bind_peers.create()
-  let _open_peers: List[_SocketPeer]                     = _open_peers.create()
   
   let _timers:   Timers        = _timers.create()
   let _outgoing: List[Message] = _outgoing.create()
@@ -138,24 +137,18 @@ actor Socket
     If and while messages and peers are available (non-erroring), send them.
     """
     try while true do
-      let peer = _choose_next_peer()
-      peer.send(_outgoing.shift())
+      let m = _outgoing.shift()
+      try _handle_out(m)
+      else _outgoing.unshift(m)
+        error
+      end
     end end
   
-  fun ref _choose_next_peer(): _SocketPeer? =>
-    _open_peers(0)
-  
   fun ref _add_open_peer(peer: _SocketPeer) =>
-    _open_peers.push(peer)
     _handle_in.add_peer(peer)
+    _handle_out.add_peer(peer)
   
   fun ref _lost_open_peer(peer: _SocketPeer) =>
-    for node in _open_peers.nodes() do
-      try
-        if node() is peer then
-          node.remove()
-          return
-        end
-      end
-    end
+    _handle_in.rem_peer(peer)
+    _handle_out.rem_peer(peer)
     peer.dispose()

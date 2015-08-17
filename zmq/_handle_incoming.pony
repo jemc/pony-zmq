@@ -4,14 +4,15 @@
 
 interface _HandleIncoming
   fun ref add_peer(p: _SocketPeer) => None
-  fun ref apply(p: _SocketPeer, m: Message)?
+  fun ref rem_peer(p: _SocketPeer) => None
+  fun apply(p: _SocketPeer, m: Message)?
 
 
 class _HandleIncomingAllPeers is _HandleIncoming
   """
   Never discard messages.
   """
-  fun ref apply(p: _SocketPeer, m: Message) => None
+  fun apply(p: _SocketPeer, m: Message) => None
 
 class _HandleIncomingSinglePeer is _HandleIncoming
   """
@@ -19,12 +20,13 @@ class _HandleIncomingSinglePeer is _HandleIncoming
   """
   var _peer: (_SocketPeer | None) = None
   fun ref add_peer(p: _SocketPeer) => _peer = p
-  fun ref apply(p: _SocketPeer, m: Message)? =>
+  fun ref rem_peer(p: _SocketPeer) => _peer = None
+  fun apply(p: _SocketPeer, m: Message)? =>
     if not (p is _peer) then error end
 
 class _HandleIncomingDiscard is _HandleIncoming
   """
   Discard all messages.
   """
-  fun ref apply(p: _SocketPeer, m: Message)? =>
+  fun apply(p: _SocketPeer, m: Message)? =>
     error
