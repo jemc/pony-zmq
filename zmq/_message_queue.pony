@@ -37,8 +37,7 @@ class _MessageQueue
     If active and target is not None, send message to target, else push for later.
     """
     if active then
-      try
-        let target' = target as _MessageQueueWritable
+      match target | let target': _MessageQueueWritable =>
         flush(target')
         target'.write(_write_transform(message))
       else
