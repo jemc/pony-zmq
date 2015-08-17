@@ -91,36 +91,3 @@ primitive PAIR is SocketType
   fun tag accepts(other: String): Bool => (other == "PAIR")
   fun tag handle_outgoing(): _HandleOutgoing => _HandleOutgoingSinglePeer
   fun tag handle_incoming(): _HandleIncoming => _HandleIncomingSinglePeer
-
-///
-// SocketType-intrinsic strategies for handling messages and peer routing.
-
-interface _HandleOutgoing val
-  fun tag handle() => None // TODO: flesh out this interface
-
-primitive _HandleOutgoingAllPeers is _HandleOutgoing
-primitive _HandleOutgoingRoundRobin is _HandleOutgoing
-primitive _HandleOutgoingSubscribedPeers is _HandleOutgoing
-primitive _HandleOutgoingRoutingFrame is _HandleOutgoing
-primitive _HandleOutgoingSinglePeer is _HandleOutgoing
-primitive _HandleOutgoingDiscard is _HandleOutgoing
-
-interface _HandleIncoming val
-  fun tag handle() => None // TODO: flesh out this interface
-
-primitive _HandleIncomingAllPeers is _HandleIncoming
-primitive _HandleIncomingSinglePeer is _HandleIncoming
-primitive _HandleIncomingDiscard is _HandleIncoming
-
-interface _ObserveOutgoing val
-  fun tag observe() => None // TODO: flesh out this interface
-
-primitive _ObserveOutgoingNone is _ObserveOutgoing
-primitive _ObserveOutgoingRoutingFrame is _ObserveOutgoing
-
-interface _ObserveIncoming val
-  fun tag observe() => None // TODO: flesh out this interface
-
-primitive _ObserveIncomingNone is _ObserveIncoming
-primitive _ObserveIncomingRoutingFrame is _ObserveIncoming
-primitive _ObserveIncomingSubscriptionFilter is _ObserveIncoming
