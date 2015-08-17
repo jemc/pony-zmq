@@ -106,12 +106,12 @@ actor Socket
     Inspect.print("_protocol_error: " + string)
   
   be _connected(peer: _SocketPeer) =>
-    _add_open_peer(peer)
+    _new_peer(peer)
     _maybe_send_messages()
   
   be _received(peer: _SocketPeer, message: Message) =>
     try _handle_in(peer, message)
-      _notify.received(this, peer as SocketPeer, consume message)
+      _notify.received(this, peer, consume message)
     end
   
   be _connected_from_bind(bind': _SocketBind, peer: _SocketPeer) =>
@@ -120,7 +120,7 @@ actor Socket
       _bind_peers(bind') = list
       list
     end).push(peer)
-    _add_open_peer(peer)
+    _new_peer(peer)
   
   be _bind_closed(bind': _SocketBind) =>
     for (key, other) in _binds.pairs() do
@@ -130,7 +130,7 @@ actor Socket
     end
     try
       for peer in _bind_peers(bind').values() do
-        _lost_open_peer(peer)
+        _lost_peer(peer)
       end
     end
     bind'.dispose()
@@ -147,11 +147,13 @@ actor Socket
       end
     end end
   
-  fun ref _add_open_peer(peer: _SocketPeer) =>
+  fun ref _new_peer(peer: _SocketPeer) =>
     _handle_in.new_peer(peer)
     _handle_out.new_peer(peer)
+    _notify.new_peer(this, peer)
   
-  fun ref _lost_open_peer(peer: _SocketPeer) =>
+  fun ref _lost_peer(peer: _SocketPeer) =>
     _handle_in.lost_peer(peer)
     _handle_out.lost_peer(peer)
+    _notify.lost_peer(this, peer)
     peer.dispose()
