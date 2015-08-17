@@ -87,7 +87,9 @@ actor Socket
   
   be connect(string: String) =>
     try _peers(string) else
-      _peers(string) = try _make_peer(string) else return end
+      let peer = try _make_peer(string) else return end
+      _peers(string) = peer
+      _new_peer(peer)
     end
   
   be bind(string: String) =>
