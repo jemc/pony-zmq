@@ -2,9 +2,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface _HandleIncoming val
-  fun tag handle() => None // TODO: flesh out this interface
+interface _HandleIncoming
+  fun ref add_peer(p: _SocketPeer) => None
+  fun ref apply(p: _SocketPeer, m: Message)?
 
-primitive _HandleIncomingAllPeers is _HandleIncoming
-primitive _HandleIncomingSinglePeer is _HandleIncoming
-primitive _HandleIncomingDiscard is _HandleIncoming
+
+class _HandleIncomingAllPeers is _HandleIncoming
+  """
+  Never discard messages.
+  """
+  fun ref apply(p: _SocketPeer, m: Message) => None
+
+class _HandleIncomingSinglePeer is _HandleIncoming
+  """
+  Discard messages that don't come from the single most recently activated peer.
+  """
+  var _peer: (_SocketPeer | None) = None
+  fun ref add_peer(p: _SocketPeer) => _peer = p
+  fun ref apply(p: _SocketPeer, m: Message)? =>
+    if not (p is _peer) then error end
+
+class _HandleIncomingDiscard is _HandleIncoming
+  """
+  Discard all messages.
+  """
+  fun ref apply(p: _SocketPeer, m: Message)? =>
+    error
