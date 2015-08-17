@@ -5,10 +5,9 @@
 use "collections"
 
 interface _HandleOutgoing
-  fun ref add_peer(p: _SocketPeer) => None
-  fun ref rem_peer(p: _SocketPeer) => None
+  fun ref new_peer(p: _SocketPeer) => None
+  fun ref lost_peer(p: _SocketPeer) => None
   fun ref apply(m: Message)?
-
 
 class _HandleOutgoingAllPeers is _HandleOutgoing
   """
@@ -16,9 +15,9 @@ class _HandleOutgoingAllPeers is _HandleOutgoing
   """
   let _peers: List[_SocketPeer] = _peers.create()
   
-  fun ref add_peer(p: _SocketPeer) => _peers.push(p)
+  fun ref new_peer(p: _SocketPeer) => _peers.push(p)
   
-  fun ref rem_peer(p: _SocketPeer) =>
+  fun ref lost_peer(p: _SocketPeer) =>
     for node in _peers.nodes() do
       try
         if node() is p then
@@ -40,9 +39,9 @@ class _HandleOutgoingRoundRobin is _HandleOutgoing
   let _peers: List[_SocketPeer] = _peers.create()
   var _robin: U64 = 0 // TODO: Linked-list-oriented implementation.
   
-  fun ref add_peer(p: _SocketPeer) => _peers.push(p)
+  fun ref new_peer(p: _SocketPeer) => _peers.push(p)
   
-  fun ref rem_peer(p: _SocketPeer) =>
+  fun ref lost_peer(p: _SocketPeer) =>
     for node in _peers.nodes() do
       try
         if node() is p then
@@ -74,8 +73,8 @@ class _HandleOutgoingSinglePeer is _HandleOutgoing
   Route all outgoing messages to the most recently activated peer.
   """
   var _peer: (_SocketPeer | None) = None
-  fun ref add_peer(p: _SocketPeer) => _peer = p
-  fun ref rem_peer(p: _SocketPeer) => _peer = None
+  fun ref new_peer(p: _SocketPeer) => _peer = p
+  fun ref lost_peer(p: _SocketPeer) => _peer = None
   fun ref apply(m: Message)? =>
     (_peer as _SocketPeer).send(m)
 

@@ -145,10 +145,10 @@ actor Socket
     end end
   
   fun ref _add_open_peer(peer: _SocketPeer) =>
-    _handle_in.add_peer(peer)
-    _handle_out.add_peer(peer)
+    _handle_in.new_peer(peer)
+    _handle_out.new_peer(peer)
   
   fun ref _lost_open_peer(peer: _SocketPeer) =>
-    _handle_in.rem_peer(peer)
-    _handle_out.rem_peer(peer)
+    _handle_in.lost_peer(peer)
+    _handle_out.lost_peer(peer)
     peer.dispose()
