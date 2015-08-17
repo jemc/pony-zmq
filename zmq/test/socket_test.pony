@@ -44,12 +44,10 @@ class SocketTestCurve is UnitTest
     a.set(zmq.CurvePublicKey("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
     a.set(zmq.CurveSecretKey("mjr{I->@v1rhtZ<zka05x/<RUS[3s{-eN.jtVgr&"))
     a.set(zmq.CurveAsServer(true))
-    a.set(zmq.ReconnectInterval(1.0))
     
     b.set(zmq.CurvePublicKey("C.aR>9^Q5BZN7MLI50<IJ*[p)?Ahn^.]p/pfSnw8"))
     b.set(zmq.CurveSecretKey("!{(r5u+61V?(FMkLEQT{W)!{VQJhCLW>]*/Eyn]s"))
     b.set(zmq.CurvePublicKeyOfServer("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
-    b.set(zmq.ReconnectInterval(1.0))
     
     a.bind("tcp://localhost:8899")
     b.connect("tcp://localhost:8899")
