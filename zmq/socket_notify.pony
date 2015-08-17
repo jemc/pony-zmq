@@ -2,10 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use zmtp = "zmtp"
-
 interface SocketNotify iso
-  fun ref sent(socket: Socket, message: zmtp.Message): zmtp.Message ? =>
+  fun ref sent(socket: Socket, message: Message): Message ? =>
     """
     Called when a message is sent on the connection. This gives the notifier an
     opportunity to modify sent message before it is written. The notifier can
@@ -13,7 +11,7 @@ interface SocketNotify iso
     """
     message
   
-  fun ref received(socket: Socket, message: zmtp.Message) =>
+  fun ref received(socket: Socket, message: Message) =>
     """
     Called when a new message is received on the connection.
     """
