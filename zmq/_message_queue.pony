@@ -27,11 +27,9 @@ class _MessageQueue
     Send all queued messages to target.
     """
     if _empty then return end
-    try
-      while true do
-        target.write(_write_transform(_inner.shift()))
-      end
-      _empty = true
+    while true do
+      let msg = try _inner.shift() else (_empty = true; return) end
+      target.write(_write_transform(msg))
     end
   
   fun ref send(message: Message, target: (_MessageQueueWritable | None), active: Bool) =>
