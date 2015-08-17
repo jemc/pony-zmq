@@ -49,7 +49,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   
   be closed() =>
     _active = false
-    if not _disposed then reconnect_now() end
+    if not _disposed then reconnect_later() end
   
   be connect_failed() =>
     _active = false
@@ -60,11 +60,6 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   
   be send(message: Message) =>
     _messages.send(message, _inner, _active)
-  
-  fun ref reconnect_now() =>
-    try (_inner as TCPConnection).dispose() end
-    _inner = TCPConnection(_SocketTCPNotify(this, _socket_type, _socket_opts),
-                           _endpoint.host, _endpoint.port)
   
   fun ref reconnect_later() =>
     try (_inner as TCPConnection).dispose() end
