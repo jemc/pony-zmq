@@ -8,7 +8,7 @@ interface _LambdaPartial iso
 interface _MessageLambdaPartial iso
   fun ref apply(message: zmq.Message) => None
 
-actor _SocketReactor
+actor _SocketReactor is zmq.SocketNotifiableActor
   let _messages: List[zmq.Message]           = _messages.create()
   let _handlers: List[_MessageLambdaPartial] = _handlers.create()
   
@@ -23,7 +23,7 @@ actor _SocketReactor
     _handlers.push(consume handler)
     maybe_run_handlers()
   
-  be received(socket: zmq.Socket, message: zmq.Message) =>
+  be received(socket: zmq.Socket, peer: zmq.SocketPeer, message: zmq.Message) =>
     _messages.push(message)
     maybe_run_handlers()
   

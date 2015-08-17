@@ -3,17 +3,21 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 interface SocketNotify iso
-  fun ref sent(socket: Socket, message: Message): Message ? =>
+  fun ref received(socket: Socket, peer: SocketPeer, message: Message) =>
     """
-    Called when a message is sent on the connection. This gives the notifier an
-    opportunity to modify sent message before it is written. The notifier can
-    raise an error if the message is swallowed entirely.
+    Called when a new message is received from a peer.
     """
-    message
+    None
   
-  fun ref received(socket: Socket, message: Message) =>
+  fun ref new_peer(socket: Socket, peer: SocketPeer) =>
     """
-    Called when a new message is received on the connection.
+    Called when a new peer is added to the Socket.
+    """
+    None
+  
+  fun ref lost_peer(socket: Socket, peer: SocketPeer) =>
+    """
+    Called when a peer is removed from the Socket.
     """
     None
   
@@ -26,14 +30,18 @@ interface SocketNotify iso
 class SocketNotifyNone iso is SocketNotify
   new iso create() => None
 
-interface _SocketNotifiableActor tag
-  be received(socket: Socket, message: Message) => None
+interface SocketNotifiableActor tag
+  be received(socket: Socket, peer: SocketPeer, message: Message) => None
+  be new_peer(socket: Socket, peer: SocketPeer) => None
+  be lost_peer(socket: Socket, peer: SocketPeer) => None
   be closed(socket: Socket) => None
 
 class SocketNotifyActor iso is SocketNotify
-  let _parent: _SocketNotifiableActor
-  new iso create(parent: _SocketNotifiableActor) => _parent = parent
+  let _parent: SocketNotifiableActor
+  new iso create(parent: SocketNotifiableActor) => _parent = parent
   
-  fun ref received(s: Socket, m: Message) => _parent.received(s, m)
+  fun ref received(s: Socket, p: SocketPeer, m: Message) => _parent.received(s, p, m)
+  fun ref new_peer(s: Socket, p: SocketPeer) => _parent.new_peer(s, p)
+  fun ref lost_peer(s: Socket, p: SocketPeer) => _parent.lost_peer(s, p)
   fun ref closed(s: Socket) => _parent.closed(s)
 

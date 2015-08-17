@@ -6,6 +6,9 @@ use "collections"
 use "time"
 use "./inspect"
 
+interface SocketPeer tag // public, limited
+  be send(message: Message)
+
 interface _SocketPeer tag
   be send(message: Message)
   be dispose()
@@ -108,7 +111,7 @@ actor Socket
   
   be _received(peer: _SocketPeer, message: Message) =>
     try _handle_in(peer, message)
-      _notify.received(this, consume message)
+      _notify.received(this, peer as SocketPeer, consume message)
     end
   
   be _connected_from_bind(bind': _SocketBind, peer: _SocketPeer) =>
