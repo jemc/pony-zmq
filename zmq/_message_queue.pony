@@ -34,15 +34,15 @@ class _MessageQueue
       _empty = true
     end
   
-  fun ref send(message: Message, target': (_MessageQueueWritable | None), active: Bool) =>
+  fun ref send(message: Message, target: (_MessageQueueWritable | None), active: Bool) =>
     """
     If active and target is not None, send message to target, else push for later.
     """
     if active then
       try
-        let target = target' as _MessageQueueWritable
-        flush(target as _MessageQueueWritable)
-        target.write(_write_transform(message))
+        let target' = target as _MessageQueueWritable
+        flush(target')
+        target'.write(_write_transform(message))
       else
         push(message)
       end
