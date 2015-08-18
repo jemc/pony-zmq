@@ -30,18 +30,16 @@ class _SocketBindTCPListenNotify is TCPListenNotify
     None // TODO: pass along to Socket
   
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
-    _SocketTCPNotify(_SocketPeerTCPBound(_parent, listen), _socket_opts)
+    _SocketTCPNotify(_SocketPeerTCPBound(_parent), _socket_opts)
 
 actor _SocketPeerTCPBound is _SocketTCPNotifiable
   let _parent: Socket
-  let _bind: TCPListener
   var _inner: (TCPConnection | None) = None
   var _active: Bool
   let _messages: _MessageQueue = _MessageQueue
   
-  new create(parent: Socket, bind: TCPListener) =>
+  new create(parent: Socket) =>
     _parent = parent
-    _bind = bind
     _inner = None
     _active = false
   
