@@ -71,3 +71,35 @@ class SocketTestCurve is UnitTest
     end~apply(h,rb) end)
     
     LongTest
+
+class SocketTestInProc is UnitTest
+  new iso create() => None
+  fun name(): String => "zmq.Socket (inproc)"
+  
+  fun apply(h: TestHelper): TestResult =>
+    let ctx = zmq.Context
+    let ra = _SocketReactor; let a = ctx.socket(zmq.PAIR, ra.notify())
+    let rb = _SocketReactor; let b = ctx.socket(zmq.PAIR, rb.notify())
+    
+    a.bind("inproc://SocketTestInProc")
+    b.connect("inproc://SocketTestInProc")
+    a.send_string("foo")
+    b.send_string("bar")
+    
+    ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+      s.dispose()
+    end~apply(h,a) end)
+    
+    rb.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+      s.dispose()
+    end~apply(h,b) end)
+    
+    ra.when_closed(recover lambda(h: TestHelper, rb: _SocketReactor) =>
+      rb.when_closed(recover lambda(h: TestHelper) =>
+        h.complete(true)
+      end~apply(h) end)
+    end~apply(h,rb) end)
+    
+    LongTest

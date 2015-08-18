@@ -46,3 +46,43 @@ class _MessageQueue
     else
       push(message)
     end
+
+interface _MessageQueueSimpleReceivable tag
+  be received(message: Message)
+
+// TODO: Remove this class and reconcile with refactored _MessageQueue above.
+class _MessageQueueSimple
+  let _inner: List[Message] = _inner.create()
+  var _empty: Bool = true
+  
+  fun ref push(message: Message) =>
+    """
+    Push a message to send at the next flush.
+    """
+    _inner.push(message)
+    _empty = false
+  
+  fun ref flush(target: _MessageQueueSimpleReceivable) =>
+    """
+    Send all queued messages to target.
+    """
+    if _empty then return end
+    while true do
+      let msg = try _inner.shift() else (_empty = true; return) end
+      target.received(msg)
+    end
+  
+  fun ref send(message: Message, target: (_MessageQueueSimpleReceivable | None), active: Bool) =>
+    """
+    If active and target is not None, send message to target, else push for later.
+    """
+    if active then
+      match target | let target': _MessageQueueSimpleReceivable =>
+        flush(target')
+        target'.received(message)
+      else
+        push(message)
+      end
+    else
+      push(message)
+    end

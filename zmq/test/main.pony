@@ -11,3 +11,4 @@ actor Main is TestList
     test(SocketOptionsTest)
     test(SocketTest)
     test(SocketTestCurve)
+    test(SocketTestInProc)
