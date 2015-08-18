@@ -7,7 +7,6 @@ use "net"
 
 actor _SocketPeerTCP is _SocketTCPNotifiable
   let _parent: Socket
-  let _socket_type: SocketType
   let _socket_opts: SocketOptions val
   let _endpoint: EndpointTCP
   var _inner: (TCPConnection | None) = None
@@ -19,14 +18,11 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   
   var _reconnect_timer: (Timer tag | None) = None
   
-  new create(parent: Socket, socket_type: SocketType,
-    socket_opts: SocketOptions val, endpoint: EndpointTCP
-  ) =>
+  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: EndpointTCP) =>
     _parent = parent
-    _socket_type = socket_type
     _socket_opts = socket_opts
     _endpoint = endpoint
-    _inner = TCPConnection(_SocketTCPNotify(this, _socket_type, _socket_opts),
+    _inner = TCPConnection(_SocketTCPNotify(this, _socket_opts),
                            _endpoint.host, _endpoint.port)
   
   be dispose() =>
@@ -72,6 +68,6 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   
   be _reconnect_timer_fire() =>
     if not _active and not _disposed then
-      _inner = TCPConnection(_SocketTCPNotify(this, _socket_type, _socket_opts),
+      _inner = TCPConnection(_SocketTCPNotify(this, _socket_opts),
                              _endpoint.host, _endpoint.port)
     end

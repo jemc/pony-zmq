@@ -16,11 +16,9 @@ class _SocketTCPNotify is TCPConnectionNotify
   let _parent: _SocketTCPNotifiable
   let _session: _SessionKeeper
   
-  new iso create(parent: _SocketTCPNotifiable,
-    socket_type: SocketType, socket_opts: SocketOptions val
-  ) =>
+  new iso create(parent: _SocketTCPNotifiable, socket_opts: SocketOptions val) =>
     _parent = parent
-    _session = _SessionKeeper(socket_type, socket_opts)
+    _session = _SessionKeeper(socket_opts)
   
   ///
   // TCPConnectionNotify methods

@@ -26,7 +26,6 @@ actor Socket
   let _timers:   Timers        = _timers.create()
   let _outgoing: List[Message] = _outgoing.create()
   
-  let _socket_type: SocketType
   let _socket_opts: SocketOptions = _socket_opts.create()
   
   let _handle_in:  _HandleIncoming
@@ -36,11 +35,11 @@ actor Socket
   
   new create(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone) =>
     _notify = consume notify
-    _socket_type = socket_type
-    _handle_in = _socket_type.handle_incoming()
-    _handle_out = _socket_type.handle_outgoing()
-    _observe_in = _socket_type.observe_incoming()
-    _observe_out = _socket_type.observe_outgoing()
+    _handle_in = socket_type.handle_incoming()
+    _handle_out = socket_type.handle_outgoing()
+    _observe_in = socket_type.observe_incoming()
+    _observe_out = socket_type.observe_outgoing()
+    _SocketTypeAsSocketOption(socket_type).set_in(_socket_opts)
   
   be dispose() =>
     _timers.dispose()
@@ -66,7 +65,7 @@ actor Socket
   
   fun _make_peer(string: String): _SocketPeer? =>
     match EndpointParser.from_uri(string)
-    | let e: EndpointTCP => _SocketPeerTCP(this, _socket_type, _socket_opts_clone(), e)
+    | let e: EndpointTCP => _SocketPeerTCP(this, _socket_opts_clone(), e)
     | let e: EndpointUnknown => error
     else
       Inspect.out("failed to parse connect endpoint: "+string)
@@ -75,7 +74,7 @@ actor Socket
   
   fun _make_bind(string: String): _SocketBind? =>
     match EndpointParser.from_uri(string)
-    | let e: EndpointTCP => _SocketBindTCP(this, _socket_type, _socket_opts_clone(), e)
+    | let e: EndpointTCP => _SocketBindTCP(this, _socket_opts_clone(), e)
     | let e: EndpointUnknown => error
     else
       Inspect.out("failed to parse bind endpoint: "+string)

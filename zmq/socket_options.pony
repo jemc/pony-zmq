@@ -13,7 +13,8 @@ type SocketOptionValue is
   | U64
   | F64
   | String
-  | (String | None))
+  | (String | None)
+  | SocketType)
 
 interface SocketOption[A: SocketOptionValue] tag
   fun tag apply(value: A): _SocketOptionWithValue[A] =>
@@ -73,6 +74,12 @@ interface SocketOptionWithValue val
   fun val set_in(list: SocketOptions): Bool
 
 type SocketOptions is List[SocketOptionWithValue]
+
+///
+// Internal-only socket options
+
+primitive _SocketTypeAsSocketOption is SocketOption[SocketType]
+  fun tag default(): SocketType => PAIR
 
 ///
 // Socket option shared behaviors

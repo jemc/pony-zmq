@@ -6,22 +6,18 @@ use "net"
 
 actor _SocketBindTCP
   var _inner: TCPListener
-  new create(parent: Socket, socket_type: SocketType,
-    socket_opts: SocketOptions val, endpoint: EndpointTCP
-  ) =>
-    _inner = TCPListener(_SocketBindTCPListenNotify(parent, socket_type, socket_opts),
+  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: EndpointTCP) =>
+    _inner = TCPListener(_SocketBindTCPListenNotify(parent, socket_opts),
                          endpoint.host, endpoint.port)
   be dispose() =>
     _inner.dispose()
 
 class _SocketBindTCPListenNotify is TCPListenNotify
   let _parent: Socket
-  let _socket_type: SocketType
   let _socket_opts: SocketOptions val
   
-  new iso create(parent: Socket, socket_type: SocketType, socket_opts: SocketOptions val) =>
+  new iso create(parent: Socket, socket_opts: SocketOptions val) =>
     _parent = parent
-    _socket_type = socket_type
     _socket_opts = socket_opts
     
   fun ref listening(listen: TCPListener ref) =>
@@ -34,7 +30,7 @@ class _SocketBindTCPListenNotify is TCPListenNotify
     None // TODO: pass along to Socket
   
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
-    _SocketTCPNotify(_SocketPeerTCPBound(_parent, listen), _socket_type, _socket_opts)
+    _SocketTCPNotify(_SocketPeerTCPBound(_parent, listen), _socket_opts)
 
 actor _SocketPeerTCPBound is _SocketTCPNotifiable
   let _parent: Socket

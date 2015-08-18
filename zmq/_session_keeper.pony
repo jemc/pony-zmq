@@ -8,18 +8,12 @@ use zmtp = "zmtp"
 use "../../pony-sodium/sodium"
 
 class _SessionKeeper
-  let _session: zmtp.Session = zmtp.Session
-  
-  let _socket_type: SocketType
   let _socket_opts: SocketOptions val
   
+  let _session: zmtp.Session = zmtp.Session
   let _buffer: net.Buffer = net.Buffer
   
-  new create(
-    socket_type: SocketType,
-    socket_opts: SocketOptions val
-  ) =>
-    _socket_type = socket_type
+  new create(socket_opts: SocketOptions val) =>
     _socket_opts = socket_opts
   
   fun ref start(
@@ -67,6 +61,9 @@ class _SessionKeeper
     _buffer.append(consume data)
     _session.handle_input(_buffer)
   
+  fun _socket_type(): SocketType =>
+    _SocketTypeAsSocketOption.find_in(_socket_opts)
+  
   ///
   // Convenience methods for the underlying session
   
@@ -82,7 +79,7 @@ class _SessionKeeper
     end
   
   fun socket_type_string(): String =>
-    _socket_type.string()
+    _socket_type().string()
   
   fun socket_type_accepts(string: String): Bool =>
-    _socket_type.accepts(string)
+    _socket_type().accepts(string)
