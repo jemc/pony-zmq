@@ -2,29 +2,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use "regex"
-
-type Endpoint is
-  ( EndpointUnknown
-  | EndpointTCP)
+interface Endpoint val
+  new val from_uri(string: String)?
+  fun to_uri(): String
 
 primitive EndpointParser
   fun from_uri(string: String): Endpoint =>
     try EndpointTCP.from_uri(string) else
-      EndpointUnknown.from_uri(string)
-    end
+    try EndpointInProc.from_uri(string) else
+        EndpointUnknown.from_uri(string)
+    end end
 
-class EndpointUnknown val
+
+class EndpointUnknown val is Endpoint
   let uri: String
   new val from_uri(string: String) => uri = string
   fun to_uri(): String => uri
 
-class EndpointTCP val
+class EndpointTCP val is Endpoint
   let schema: String = "tcp://"
-  var host: String
-  var port: String
+  let host: String
+  let port: String
   
-  new val from_uri(string: String) ? =>
+  new val from_uri(string: String)? =>
     if not string.at(schema) then error end
     let parts = string.substring(schema.size().i64()).split(":")
     if 2 != parts.size() then error end
@@ -34,3 +34,14 @@ class EndpointTCP val
   
   fun to_uri(): String =>
     schema + host + ":" + port
+
+class EndpointInProc val is Endpoint
+  let schema: String = "inproc://"
+  let path: String
+  
+  new val from_uri(string: String)? =>
+    if not string.at(schema) then error end
+    path = string.substring(schema.size().i64())
+  
+  fun to_uri(): String =>
+    schema + path
