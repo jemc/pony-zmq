@@ -16,12 +16,12 @@ class SocketTest is UnitTest
     b.send(recover zmq.Message.push("bar") end)
     
     ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
       s.dispose()
     end~apply(h,a) end)
     
     rb.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
       s.dispose()
     end~apply(h,b) end)
     
@@ -55,12 +55,12 @@ class SocketTestCurve is UnitTest
     b.send(recover zmq.Message.push("bar") end)
     
     ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
       s.dispose()
     end~apply(h,a) end)
     
     rb.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
       s.dispose()
     end~apply(h,b) end)
     
@@ -87,12 +87,12 @@ class SocketTestInProc is UnitTest
     b.send(recover zmq.Message.push("bar") end)
     
     ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
       s.dispose()
     end~apply(h,a) end)
     
     rb.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
       s.dispose()
     end~apply(h,b) end)
     

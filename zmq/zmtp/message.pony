@@ -32,14 +32,14 @@ class Message val is (Stringable & Comparable[Message box] & Seq[Frame])
   
   fun eq(that: Message box): Bool =>
     if size() != that.size() then return false end
-    try for i in Range(0, size()-1) do
+    try for i in Range(0, size()) do
       if not _frame_eq(this(i), that(i)) then return false end
     end else return false end
     true
   
   fun tag _frame_eq(a: Frame, b: Frame): Bool =>
     if a.size() != b.size() then return false end
-    try for i in Range(0, a.size()-1) do
+    try for i in Range(0, a.size()) do
       if a(i) != b(i) then return false end
     end else return false end
     true
