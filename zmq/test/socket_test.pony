@@ -12,8 +12,8 @@ class SocketTest is UnitTest
     
     a.bind("tcp://localhost:8888")
     b.connect("tcp://localhost:8888")
-    a.send_string("foo")
-    b.send_string("bar")
+    a.send(recover zmq.Message.push("foo") end)
+    b.send(recover zmq.Message.push("bar") end)
     
     ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
       h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
@@ -51,8 +51,8 @@ class SocketTestCurve is UnitTest
     
     a.bind("tcp://localhost:8899")
     b.connect("tcp://localhost:8899")
-    a.send_string("foo")
-    b.send_string("bar")
+    a.send(recover zmq.Message.push("foo") end)
+    b.send(recover zmq.Message.push("bar") end)
     
     ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
       h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
@@ -83,8 +83,8 @@ class SocketTestInProc is UnitTest
     
     a.bind("inproc://SocketTestInProc")
     b.connect("inproc://SocketTestInProc")
-    a.send_string("foo")
-    b.send_string("bar")
+    a.send(recover zmq.Message.push("foo") end)
+    b.send(recover zmq.Message.push("bar") end)
     
     ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
       h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)

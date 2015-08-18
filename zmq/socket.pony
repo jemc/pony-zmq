@@ -109,8 +109,8 @@ actor Socket
       _binds(string) = try _make_bind(string) else return end
     end
   
-  be send_string(string: String) =>
-    _outgoing.push(recover Message.push(string) end)
+  be send(message: Message) =>
+    _outgoing.push(message)
     _maybe_send_messages()
   
   be set_timer(timer: Timer iso) =>
