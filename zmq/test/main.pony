@@ -10,6 +10,4 @@ actor Main is TestList
     test(Z85Test)
     test(EndpointTest)
     test(SocketOptionsTest)
-    test(SocketTest)
-    test(SocketTestCurve)
-    test(SocketTestInProc)
+    SocketTransportTests.tests(test)
