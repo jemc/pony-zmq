@@ -11,3 +11,4 @@ actor Main is TestList
     test(EndpointTest)
     test(SocketOptionsTest)
     SocketTransportTests.tests(test)
+    SocketTypeTests.tests(test)
