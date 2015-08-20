@@ -5,6 +5,7 @@ use zmq = ".."
 primitive SocketTypeTests is TestList
   fun tag tests(test: PonyTest) =>
     test(SocketTypeTestPairPair)
+    test(SocketTypeTestPushNPull)
 
 interface SocketTypeTest is UnitTest
   fun tag recv(h: TestHelper, rs: _SocketReactor, s: zmq.Socket, m': zmq.Message) =>
@@ -28,10 +29,21 @@ interface SocketTypeTest is UnitTest
     end~apply(h,rb) end)
     
     LongTest
+  
+  fun tag wait_3_reactors(h: TestHelper, ra: _SocketReactor, rb: _SocketReactor, rc: _SocketReactor): LongTest =>
+    ra.when_closed(recover lambda(h: TestHelper, rb: _SocketReactor, rc: _SocketReactor) =>
+      rb.when_closed(recover lambda(h: TestHelper, rc: _SocketReactor) =>
+        rc.when_closed(recover lambda(h: TestHelper) =>
+          h.complete(true)
+        end~apply(h) end)
+      end~apply(h,rc) end)
+    end~apply(h,rb,rc) end)
+    
+    LongTest
 
 class SocketTypeTestPairPair is SocketTypeTest
   new iso create() => None
-  fun name(): String => "zmq.Socket (type: PAIR/PAIR)"
+  fun name(): String => "zmq.Socket (type: 1-PAIR <-> 1-PAIR)"
   
   fun apply(h: TestHelper): TestResult =>
     let ctx = zmq.Context
@@ -58,3 +70,45 @@ class SocketTypeTestPairPair is SocketTypeTest
     recv_last(h, rb, b, recover zmq.Message.push("b3") end)
     
     wait_2_reactors(h, ra, rb)
+
+class SocketTypeTestPushNPull is SocketTypeTest
+  new iso create() => None
+  fun name(): String => "zmq.Socket (type: 1-PUSH --> N-PULL)"
+  
+  fun apply(h: TestHelper): TestResult =>
+    let ctx = zmq.Context
+    let rs = _SocketReactor; let s = ctx.socket(zmq.PUSH, rs.notify())
+    let ra = _SocketReactor; let a = ctx.socket(zmq.PULL, ra.notify())
+    let rb = _SocketReactor; let b = ctx.socket(zmq.PULL, rb.notify())
+    let rc = _SocketReactor; let c = ctx.socket(zmq.PULL, rc.notify())
+    
+    a.bind("inproc://" + name() + "/a")
+    b.bind("inproc://" + name() + "/b")
+    c.bind("inproc://" + name() + "/c")
+    s.connect("inproc://" + name() + "/a")
+    s.connect("inproc://" + name() + "/b")
+    s.connect("inproc://" + name() + "/c")
+    
+    s.send(recover zmq.Message.push("a1") end)
+    s.send(recover zmq.Message.push("b1") end)
+    s.send(recover zmq.Message.push("c1") end)
+    s.send(recover zmq.Message.push("a2") end)
+    s.send(recover zmq.Message.push("b2") end)
+    s.send(recover zmq.Message.push("c2") end)
+    s.send(recover zmq.Message.push("a3") end)
+    s.send(recover zmq.Message.push("b3") end)
+    s.send(recover zmq.Message.push("c3") end)
+    
+    recv(h,      ra, a, recover zmq.Message.push("a1") end)
+    recv(h,      ra, a, recover zmq.Message.push("a2") end)
+    recv_last(h, ra, a, recover zmq.Message.push("a3") end)
+    
+    recv(h,      rb, b, recover zmq.Message.push("b1") end)
+    recv(h,      rb, b, recover zmq.Message.push("b2") end)
+    recv_last(h, rb, b, recover zmq.Message.push("b3") end)
+    
+    recv(h,      rc, c, recover zmq.Message.push("c1") end)
+    recv(h,      rc, c, recover zmq.Message.push("c2") end)
+    recv_last(h, rc, c, recover zmq.Message.push("c3") end)
+    
+    wait_3_reactors(h, ra, rb, rc)
