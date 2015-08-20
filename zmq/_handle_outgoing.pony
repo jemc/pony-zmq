@@ -53,7 +53,7 @@ class _HandleOutgoingRoundRobin is _HandleOutgoing
   
   fun ref apply(m: Message)? =>
     (try _peers(_robin = _robin + 1)
-    else _robin = 0; _peers(0)
+    else _robin = 1; _peers(0)
     end).send(m)
 
 class _HandleOutgoingSubscribedPeers is _HandleOutgoing
