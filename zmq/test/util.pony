@@ -9,16 +9,20 @@ interface _LambdaPartial iso
 interface _MessageLambdaPartial iso
   fun ref apply(message: zmq.Message) => None
 
+interface _PeerMessageLambdaPartial iso
+  fun ref apply(peer: zmq.SocketPeer, message: zmq.Message) => None
+
 interface _MessageListLambdaPartial iso
   fun ref apply(message: List[zmq.Message]) => None
 
 type _SocketReactorHandler is
   ( _MessageLambdaPartial
+  | _PeerMessageLambdaPartial
   | (U64, _MessageListLambdaPartial))
 
 actor _SocketReactor is zmq.SocketNotifiableActor
-  let _messages: List[zmq.Message]           = _messages.create()
-  let _handlers: List[_SocketReactorHandler] = _handlers.create()
+  let _messages: List[(zmq.SocketPeer, zmq.Message)] = _messages.create()
+  let _handlers: List[_SocketReactorHandler]         = _handlers.create()
   
   var _closed_handler: (_LambdaPartial | None) = None
   var _closed:             Bool = false
@@ -27,7 +31,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
   fun tag notify(): zmq.SocketNotify^ =>
     zmq.SocketNotifyActor(this)
   
-  be next(handler: _MessageLambdaPartial) =>
+  be next(handler: (_MessageLambdaPartial | _PeerMessageLambdaPartial)) =>
     _handlers.push(consume handler)
     maybe_run_handlers()
   
@@ -36,7 +40,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
     maybe_run_handlers()
   
   be received(socket: zmq.Socket, peer: zmq.SocketPeer, message: zmq.Message) =>
-    _messages.push(message)
+    _messages.push((peer, message))
     maybe_run_handlers()
   
   be when_closed(handler: _LambdaPartial) =>
@@ -52,7 +56,12 @@ actor _SocketReactor is zmq.SocketNotifiableActor
       while (_handlers.size() > 0) and (_messages.size() > 0) do
         match _handlers.shift()
         | let h: _MessageLambdaPartial =>
-          (consume h)(_messages.shift())
+          (let peer, let message) = _messages.shift()
+          (consume h)(message)
+        
+        | let h: _PeerMessageLambdaPartial =>
+          (let peer, let message) = _messages.shift()
+          (consume h)(peer, message)
         
         | (var n: U64, let h: _MessageListLambdaPartial) =>
           if _messages.size() < n then _handlers.unshift((n, consume h)); error end
@@ -60,7 +69,8 @@ actor _SocketReactor is zmq.SocketNotifiableActor
           let list = List[zmq.Message]
           while n > 0 do
             n = n - 1
-            list.push(_messages.shift())
+            (let peer, let message) = _messages.shift()
+            list.push(message)
           end
           (consume h)(list)
         end

@@ -8,6 +8,8 @@ primitive SocketTypeTests is TestList
     test(SocketTypeTestPairPair)
     test(SocketTypeTestPushNPull)
     test(SocketTypeTestPullNPush)
+    test(SocketTypeTestReqNRep)
+    test(SocketTypeTestRepNReq)
 
 interface SocketTypeTest is UnitTest
   fun tag recv(h: TestHelper, rs: _SocketReactor, s: zmq.Socket, m': zmq.Message) =>
@@ -46,7 +48,7 @@ interface SocketTypeTest is UnitTest
       s.dispose()
     end~apply(h, s, expected_list) end)
   
-  fun tag wait_1_reactors(h: TestHelper, ra: _SocketReactor): LongTest =>
+  fun tag wait_1_reactor(h: TestHelper, ra: _SocketReactor): LongTest =>
     ra.when_closed(recover lambda(h: TestHelper) =>
       h.complete(true)
     end~apply(h) end)
@@ -192,4 +194,83 @@ class SocketTypeTestPullNPush is SocketTypeTest
       recover val zmq.Message.push("c3") end
     ] end)
     
-    wait_1_reactors(h, rs)
+    wait_1_reactor(h, rs)
+
+class SocketTypeTestReqNRep is SocketTypeTest
+  new iso create() => None
+  fun name(): String => "zmq.Socket (type: 1-REQ --> N-REP)"
+  
+  fun apply(h: TestHelper): TestResult =>
+    let ctx = zmq.Context
+    let rs = _SocketReactor; let s = ctx.socket(zmq.REQ, rs.notify())
+    let ra = _SocketReactor; let a = ctx.socket(zmq.REP, ra.notify())
+    let rb = _SocketReactor; let b = ctx.socket(zmq.REP, rb.notify())
+    let rc = _SocketReactor; let c = ctx.socket(zmq.REP, rc.notify())
+    
+    a.bind("inproc://SocketTypeTestReqNRep/a")
+    b.bind("inproc://SocketTypeTestReqNRep/b")
+    c.bind("inproc://SocketTypeTestReqNRep/c")
+    
+    s.access(recover lambda(s: zmq.Socket ref) =>
+      s.connect_now("inproc://SocketTypeTestReqNRep/a")
+      s.connect_now("inproc://SocketTypeTestReqNRep/b")
+      s.connect_now("inproc://SocketTypeTestReqNRep/c")
+      
+      s.send_now(recover zmq.Message.push("a") end)
+      s.send_now(recover zmq.Message.push("b") end)
+      s.send_now(recover zmq.Message.push("c") end)
+    end~apply() end)
+    
+    ra.next(recover lambda(ra: _SocketReactor, p: zmq.SocketPeer, m: zmq.Message) =>
+      p.send(recover zmq.Message.append(m).push("A") end)
+    end~apply(ra) end)
+    
+    rb.next(recover lambda(rb: _SocketReactor, p: zmq.SocketPeer, m: zmq.Message) =>
+      p.send(recover zmq.Message.append(m).push("B") end)
+    end~apply(rb) end)
+    
+    rc.next(recover lambda(rc: _SocketReactor, p: zmq.SocketPeer, m: zmq.Message) =>
+      p.send(recover zmq.Message.append(m).push("C") end)
+    end~apply(rc) end)
+    
+    recv_unordered_set(h, rs, s, recover [
+      recover val zmq.Message.push("a").push("A") end,
+      recover val zmq.Message.push("b").push("B") end,
+      recover val zmq.Message.push("c").push("C") end
+    ] end)
+    
+    wait_1_reactor(h, rs)
+
+class SocketTypeTestRepNReq is SocketTypeTest
+  new iso create() => None
+  fun name(): String => "zmq.Socket (type: 1-REP <-- N-REQ)"
+  
+  fun apply(h: TestHelper): TestResult =>
+    let ctx = zmq.Context
+    let rs = _SocketReactor; let s = ctx.socket(zmq.REP, rs.notify())
+    let ra = _SocketReactor; let a = ctx.socket(zmq.REQ, ra.notify())
+    let rb = _SocketReactor; let b = ctx.socket(zmq.REQ, rb.notify())
+    let rc = _SocketReactor; let c = ctx.socket(zmq.REQ, rc.notify())
+    
+    a.bind("inproc://SocketTypeTestRepNReq/a")
+    b.bind("inproc://SocketTypeTestRepNReq/b")
+    c.bind("inproc://SocketTypeTestRepNReq/c")
+    s.connect("inproc://SocketTypeTestRepNReq/a")
+    s.connect("inproc://SocketTypeTestRepNReq/b")
+    s.connect("inproc://SocketTypeTestRepNReq/c")
+    
+    a.send(recover zmq.Message.push("a") end)
+    b.send(recover zmq.Message.push("b") end)
+    c.send(recover zmq.Message.push("c") end)
+    
+    for i in Range(0, 3) do
+      rs.next(recover lambda(rs: _SocketReactor, p: zmq.SocketPeer, m: zmq.Message) =>
+        p.send(recover zmq.Message.append(m).push("S") end)
+      end~apply(rs) end)
+    end
+    
+    recv_last(h, ra, a, recover zmq.Message.push("a").push("S") end)
+    recv_last(h, rb, b, recover zmq.Message.push("b").push("S") end)
+    recv_last(h, rc, c, recover zmq.Message.push("c").push("S") end)
+    
+    wait_3_reactors(h, ra, rb, rc)
