@@ -16,6 +16,9 @@ interface _SocketPeer tag
 interface _SocketBind tag
   be dispose()
 
+interface SocketAccessLambda iso
+  fun ref apply(socket: Socket ref)
+
 actor Socket
   let _context: (Context | None)
   let _notify: SocketNotify ref
@@ -94,22 +97,29 @@ actor Socket
       error
     end
   
-  be set(optval: SocketOptionWithValue) =>
+  be access(f: SocketAccessLambda) =>
+    (consume f)(this)
+  
+  be set(optval: SocketOptionWithValue) => set_now(optval)
+  fun ref set_now(optval: SocketOptionWithValue) =>
     optval.set_in(_socket_opts)
   
-  be connect(string: String) =>
+  be connect(string: String) => connect_now(string)
+  fun ref connect_now(string: String) =>
     try _peers(string) else
       let peer = try _make_peer(string) else return end
       _peers(string) = peer
       _new_peer(peer)
     end
   
-  be bind(string: String) =>
+  be bind(string: String) => bind_now(string)
+  fun ref bind_now(string: String) =>
     try _binds(string) else
       _binds(string) = try _make_bind(string) else return end
     end
   
-  be send(message: Message) =>
+  be send(message: Message) => send_now(message)
+  fun ref send_now(message: Message) =>
     _outgoing.push(message)
     _maybe_send_messages()
   
