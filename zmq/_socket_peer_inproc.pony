@@ -11,11 +11,11 @@ actor _SocketPeerInProc
   
   let _messages: _MessageQueueSimple = _MessageQueueSimple
   
-  new create(parent: Socket, socket_opts: SocketOptions val,
-    endpoint: EndpointInProc, context: Context)
+  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: EndpointInProc)
   =>
     _parent = parent
     _socket_opts = socket_opts
+    let context = _ContextAsSocketOption.find_in(socket_opts)
     context._inproc_connect(endpoint.path, this)
   
   be dispose() =>

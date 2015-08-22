@@ -14,7 +14,8 @@ type SocketOptionValue is
   | F64
   | String
   | (String | None)
-  | SocketType)
+  | SocketType
+  | Context)
 
 interface SocketOption[A: SocketOptionValue] tag
   fun tag apply(value: A): _SocketOptionWithValue[A] =>
@@ -77,6 +78,9 @@ type SocketOptions is List[SocketOptionWithValue]
 
 ///
 // Internal-only socket options
+
+primitive _ContextAsSocketOption is SocketOption[Context]
+  fun tag default(): Context => Context
 
 primitive _SocketTypeAsSocketOption is SocketOption[SocketType]
   fun tag default(): SocketType => PAIR
