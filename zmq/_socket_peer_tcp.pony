@@ -10,6 +10,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   let _socket_opts: SocketOptions val
   let _endpoint: EndpointTCP
   var _inner: (_SocketTCPTarget | None) = None
+  let _session: _SessionKeeper
   
   var _active: Bool = false
   var _disposed: Bool = false
@@ -22,8 +23,8 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
     _parent = parent
     _socket_opts = socket_opts
     _endpoint = endpoint
-    _inner = TCPConnection(_SocketTCPNotify(this, _socket_opts),
-                           _endpoint.host, _endpoint.port)
+    _inner = TCPConnection(_SocketTCPNotify(this), _endpoint.host, _endpoint.port)
+    _session = _SessionKeeper(socket_opts)
   
   be dispose() =>
     try (_inner as _SocketTCPTarget).dispose() end
@@ -31,33 +32,10 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
     _active = false
     _disposed = true
   
-  be protocol_error(string: String) =>
-    _active = false
-    reconnect_later()
-    _parent._protocol_error(this, string)
-  
-  be activated(conn: _SocketTCPTarget, writex: _MessageWriteTransform) =>
-    _inner = conn
-    _active = true
-    _parent._connected(this)
-    _messages.set_write_transform(consume writex)
-    _messages.flush(conn)
-  
-  be closed() =>
-    _active = false
-    if not _disposed then reconnect_later() end
-  
-  be connect_failed() =>
-    _active = false
-    reconnect_later()
-  
-  be received(message: Message) =>
-    _parent._received(this, message)
-  
   be send(message: Message) =>
     _messages.send(message, _inner, _active)
   
-  fun ref reconnect_later() =>
+  fun ref _reconnect_later() =>
     try (_inner as _SocketTCPTarget).dispose() end
     _inner = None
     let ns = _reconnect_interval_ns()
@@ -68,6 +46,48 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   
   be _reconnect_timer_fire() =>
     if not _active and not _disposed then
-      _inner = TCPConnection(_SocketTCPNotify(this, _socket_opts),
-                             _endpoint.host, _endpoint.port)
+      _inner = TCPConnection(_SocketTCPNotify(this), _endpoint.host, _endpoint.port)
     end
+  
+  ///
+  // _SocketTCPNotifiable private interface behaviors
+  
+  be _handle_start(target: _SocketTCPTarget) =>
+    _session.start(where
+      handle_activated      = this~_handle_activated(target),
+      handle_protocol_error = this~_handle_protocol_error(),
+      handle_write          = this~_handle_write(target),
+      handle_received       = this~_handle_received()
+    )
+  
+  be _handle_input(data: Array[U8] iso) =>
+    _session.handle_input(consume data)
+  
+  be _closed() =>
+    _active = false
+    if not _disposed then _reconnect_later() end
+  
+  be _connect_failed() =>
+    _active = false
+    _reconnect_later()
+  
+  ///
+  // Session handler methods
+  
+  fun ref _handle_activated(target: _SocketTCPTarget, writex: _MessageWriteTransform) =>
+    _inner = target
+    _active = true
+    _parent._connected(this)
+    _messages.set_write_transform(consume writex)
+    _messages.flush(target)
+  
+  fun ref _handle_protocol_error(string: String) =>
+    _active = false
+    _reconnect_later()
+    _parent._protocol_error(this, string)
+  
+  fun ref _handle_write(target: _SocketTCPTarget, bytes: Bytes) =>
+    target.write(bytes)
+  
+  fun ref _handle_received(message: Message) =>
+    _parent._received(this, message)
