@@ -52,7 +52,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   ///
   // _SocketTCPNotifiable private interface behaviors
   
-  be _handle_start(target: _SocketTCPTarget) =>
+  be notify_start(target: _SocketTCPTarget) =>
     _session.start(where
       handle_activated      = this~_handle_activated(target),
       handle_protocol_error = this~_handle_protocol_error(),
@@ -60,14 +60,14 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
       handle_received       = this~_handle_received()
     )
   
-  be _handle_input(data: Array[U8] iso) =>
+  be notify_input(data: Array[U8] iso) =>
     _session.handle_input(consume data)
   
-  be _closed() =>
+  be notify_closed() =>
     _active = false
     if not _disposed then _reconnect_later() end
   
-  be _connect_failed() =>
+  be notify_connect_failed() =>
     _active = false
     _reconnect_later()
   
