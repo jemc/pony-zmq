@@ -5,12 +5,16 @@
 use "net"
 use zmtp = "zmtp"
 
+interface _SocketTCPTarget tag is _MessageQueueWritable
+  be dispose()
+
 interface _SocketTCPNotifiable tag
   be protocol_error(string: String)
-  be activated(conn: TCPConnection, writex: _MessageWriteTransform)
+  be activated(target: _SocketTCPTarget, writex: _MessageWriteTransform)
   be closed()
   be connect_failed()
   be received(message: zmtp.Message)
+  // be _handle_start()
 
 class _SocketTCPNotify is TCPConnectionNotify
   let _parent: _SocketTCPNotifiable
@@ -41,25 +45,25 @@ class _SocketTCPNotify is TCPConnectionNotify
   ///
   // Private convenience methods
   
-  fun ref _start(conn: TCPConnection ref) =>
+  fun ref _start(target: _SocketTCPTarget) =>
     _session.start(where
-      handle_activated      = this~_handle_activated(conn),
-      handle_protocol_error = this~_handle_protocol_error(conn),
-      handle_write          = this~_handle_write(conn),
-      handle_received       = this~_handle_received(conn)
+      handle_activated      = this~_handle_activated(target),
+      handle_protocol_error = this~_handle_protocol_error(target),
+      handle_write          = this~_handle_write(target),
+      handle_received       = this~_handle_received(target)
     )
   
   ///
   // Session handler methods
   
-  fun ref _handle_activated(conn: TCPConnection ref, writex: _MessageWriteTransform) =>
-    _parent.activated(conn, consume writex)
+  fun ref _handle_activated(target: _SocketTCPTarget, writex: _MessageWriteTransform) =>
+    _parent.activated(target, consume writex)
   
-  fun ref _handle_protocol_error(conn: TCPConnection ref, string: String) =>
+  fun ref _handle_protocol_error(target: _SocketTCPTarget, string: String) =>
     _parent.protocol_error(string)
   
-  fun ref _handle_write(conn: TCPConnection ref, bytes: Bytes) =>
-    conn.write(bytes)
+  fun ref _handle_write(target: _SocketTCPTarget, bytes: Bytes) =>
+    target.write(bytes)
   
-  fun ref _handle_received(conn: TCPConnection ref, message: Message) =>
+  fun ref _handle_received(target: _SocketTCPTarget, message: Message) =>
     _parent.received(message)

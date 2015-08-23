@@ -34,7 +34,7 @@ class _SocketBindTCPListenNotify is TCPListenNotify
 
 actor _SocketPeerTCPBound is _SocketTCPNotifiable
   let _parent: Socket
-  var _inner: (TCPConnection | None) = None
+  var _inner: (_SocketTCPTarget | None) = None
   var _active: Bool
   let _messages: _MessageQueue = _MessageQueue
   
@@ -44,7 +44,7 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
     _active = false
   
   be dispose() =>
-    try (_inner as TCPConnection).dispose() end
+    try (_inner as _SocketTCPTarget).dispose() end
     _inner = None
     _active = false
   
@@ -52,7 +52,7 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
     dispose()
     _parent._protocol_error(this, string)
   
-  be activated(conn: TCPConnection, writex: _MessageWriteTransform) =>
+  be activated(conn: _SocketTCPTarget, writex: _MessageWriteTransform) =>
     _inner = conn
     _active = true
     _parent._connected(this)

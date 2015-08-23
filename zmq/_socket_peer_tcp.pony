@@ -9,7 +9,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   let _parent: Socket
   let _socket_opts: SocketOptions val
   let _endpoint: EndpointTCP
-  var _inner: (TCPConnection | None) = None
+  var _inner: (_SocketTCPTarget | None) = None
   
   var _active: Bool = false
   var _disposed: Bool = false
@@ -26,7 +26,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
                            _endpoint.host, _endpoint.port)
   
   be dispose() =>
-    try (_inner as TCPConnection).dispose() end
+    try (_inner as _SocketTCPTarget).dispose() end
     _inner = None
     _active = false
     _disposed = true
@@ -36,7 +36,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
     reconnect_later()
     _parent._protocol_error(this, string)
   
-  be activated(conn: TCPConnection, writex: _MessageWriteTransform) =>
+  be activated(conn: _SocketTCPTarget, writex: _MessageWriteTransform) =>
     _inner = conn
     _active = true
     _parent._connected(this)
@@ -58,7 +58,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
     _messages.send(message, _inner, _active)
   
   fun ref reconnect_later() =>
-    try (_inner as TCPConnection).dispose() end
+    try (_inner as _SocketTCPTarget).dispose() end
     _inner = None
     let ns = _reconnect_interval_ns()
     _parent.set_timer(Timer(_ReconnectTimerNotify(this), ns, ns))
