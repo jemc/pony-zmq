@@ -19,15 +19,6 @@ class _SocketBindTCPListenNotify is TCPListenNotify
   new iso create(parent: Socket, socket_opts: SocketOptions val) =>
     _parent = parent
     _socket_opts = socket_opts
-    
-  fun ref listening(listen: TCPListener ref) =>
-    None // TODO: pass along to Socket
-  
-  fun ref not_listening(listen: TCPListener ref) =>
-    None // TODO: pass along to Socket
-  
-  fun ref closed(listen: TCPListener ref) =>
-    None // TODO: pass along to Socket
   
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
     _SocketTCPNotify(_SocketPeerTCPBound(_parent, _socket_opts))
