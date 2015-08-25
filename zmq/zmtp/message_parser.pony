@@ -55,7 +55,8 @@ class MessageParser
       buffer.skip(consume offset)
       
       // Read the frame body and append it to the ongoing message.
-      let frame = buffer.block(size)
+      let frame = recover trn String end
+      frame.append(buffer.block(size))
       _message.push(consume frame)
       
       // Get has_more flag from ident byte
