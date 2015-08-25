@@ -83,3 +83,5 @@ class _SessionKeeper
   
   fun socket_type_accepts(string: String): Bool =>
     _socket_type().accepts(string)
+  
+  fun zap_request(zap: _ZapRequest)? => error // TODO: implement

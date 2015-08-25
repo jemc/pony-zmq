@@ -20,12 +20,14 @@ interface _SessionKeeper
   fun auth_mechanism(): String
   fun socket_type_string(): String
   fun socket_type_accepts(string: String): Bool
+  fun zap_request(zap: ZapRequest)?
 
 class _SessionKeeperNone is _SessionKeeper
   fun as_server(): Bool => false
   fun auth_mechanism(): String => ""
   fun socket_type_string(): String => ""
   fun socket_type_accepts(string: String): Bool => false
+  fun zap_request(zap: ZapRequest)? => error
 
 class Session
   var keeper: _SessionKeeper = _SessionKeeperNone

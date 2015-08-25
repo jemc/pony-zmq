@@ -127,7 +127,6 @@ class MechanismAuthCurveServer is Mechanism
       error
     end
     
-    // TODO: optionally authenticate client key with application
     _c_pk = initate_box.c_pk
     let vouch_nonce = CryptoBoxNonce("VOUCH---" + initate_box.long_nonce)
     let vouch = try CryptoBox.open(initate_box.vouch_box, vouch_nonce, _c_pk, _st_sk) else
@@ -142,7 +141,15 @@ class MechanismAuthCurveServer is Mechanism
       error
     end
     
-    _write_ready()
+    let zap: ZapRequest trn = ZapRequest
+    // TODO: zap.domain = 
+    // TODO: zap.address = 
+    // TODO: zap.identity = 
+    zap.mechanism = "CURVE"
+    zap.push_credential(_c_pk.string())
+    try _session.keeper.zap_request(consume zap)
+    else _write_ready() // No ZAP handler available
+    end
   
   fun ref _write_ready()? =>
     let ready_box: CommandAuthCurveReadyBox ref = CommandAuthCurveReadyBox
