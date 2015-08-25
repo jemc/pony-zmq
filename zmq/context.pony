@@ -10,6 +10,10 @@ actor Context
   fun tag socket(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone): Socket =>
     Socket._create_in(this, socket_type, consume notify)
   
+  be _zap_request(receiver: _ZapResponseNotifiable, zap: _ZapRequest) =>
+    // TODO: implement (right now, always returns 200 OK)
+    receiver.notify_zap_response(_ZapResponse)
+  
   be _inproc_bind(string: String, bind: _SocketBindInProc) =>
     _inproc_router._bind(string, bind)
   

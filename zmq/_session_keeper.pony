@@ -20,7 +20,8 @@ class _SessionKeeper
     handle_activated:      zmtp.SessionHandleActivated,
     handle_protocol_error: zmtp.SessionHandleProtocolError,
     handle_write:          zmtp.SessionHandleWrite,
-    handle_received:       zmtp.SessionHandleReceived
+    handle_received:       zmtp.SessionHandleReceived,
+    handle_zap_request:    zmtp.SessionHandleZapRequest
   ) =>
     _buffer.clear()
     _session.start(where
@@ -29,7 +30,8 @@ class _SessionKeeper
       handle_activated      = handle_activated,
       handle_protocol_error = handle_protocol_error,
       handle_write          = handle_write,
-      handle_received       = handle_received
+      handle_received       = handle_received,
+      handle_zap_request    = handle_zap_request
     )
   
   fun _make_curve_key(key: String): String? =>
@@ -61,6 +63,9 @@ class _SessionKeeper
     _buffer.append(consume data)
     _session.handle_input(_buffer)
   
+  fun ref handle_zap_response(zap: _ZapResponse) =>
+    _session.handle_zap_response(zap)
+  
   fun _socket_type(): SocketType =>
     _SocketTypeAsSocketOption.find_in(_socket_opts)
   
@@ -83,5 +88,3 @@ class _SessionKeeper
   
   fun socket_type_accepts(string: String): Bool =>
     _socket_type().accepts(string)
-  
-  fun zap_request(zap: _ZapRequest)? => error // TODO: implement

@@ -5,6 +5,7 @@
 interface Mechanism
   fun ref handle_start()
   fun ref handle_input(buffer: _Buffer ref)
+  fun ref handle_zap_response(zap: ZapResponse) => None
 
 class MechanismNone is Mechanism
   fun ref handle_start() => None

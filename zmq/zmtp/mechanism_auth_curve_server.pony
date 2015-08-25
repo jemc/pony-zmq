@@ -7,12 +7,14 @@ use "../../../pony-sodium/sodium"
 primitive _MechanismAuthCurveServerStateReadGreeting
 primitive _MechanismAuthCurveServerStateReadHandshakeHello
 primitive _MechanismAuthCurveServerStateReadHandshakeInitiate
+primitive _MechanismAuthCurveServerStateAwaitZapResponse
 primitive _MechanismAuthCurveServerStateReadMessage
 
 type _MechanismAuthCurveServerState is
   ( _MechanismAuthCurveServerStateReadGreeting
   | _MechanismAuthCurveServerStateReadHandshakeHello
   | _MechanismAuthCurveServerStateReadHandshakeInitiate
+  | _MechanismAuthCurveServerStateAwaitZapResponse
   | _MechanismAuthCurveServerStateReadMessage)
 
 // TODO: improve performance with CryptoBox precomputation after handshake.
@@ -45,9 +47,19 @@ class MechanismAuthCurveServer is Mechanism
       | _MechanismAuthCurveServerStateReadGreeting          => _read_greeting(buffer)
       | _MechanismAuthCurveServerStateReadHandshakeHello    => _read_hello(buffer)
       | _MechanismAuthCurveServerStateReadHandshakeInitiate => _read_initiate(buffer)
+      | _MechanismAuthCurveServerStateAwaitZapResponse      => error
       | _MechanismAuthCurveServerStateReadMessage           => _read_message(buffer)
       end
     end end
+  
+  fun ref handle_zap_response(zap: ZapResponse) =>
+    if _state is _MechanismAuthCurveServerStateAwaitZapResponse then
+      if zap.is_success() then
+        try _write_ready() end // TODO: handle zap.metadata
+      else
+        _session.protocol_error("ZAP authentication failure") // TODO: more details
+      end
+    end
   
   fun ref handle_start() =>
     _next_state(_MechanismAuthCurveServerStateReadGreeting)
@@ -147,9 +159,10 @@ class MechanismAuthCurveServer is Mechanism
     // TODO: zap.identity = 
     zap.mechanism = "CURVE"
     zap.push_credential(_c_pk.string())
-    try _session.keeper.zap_request(consume zap)
-    else _write_ready() // No ZAP handler available
-    end
+    _session.zap_request(consume zap)
+    
+    _next_state(_MechanismAuthCurveServerStateAwaitZapResponse)
+    error // Don't read any more buffer input until ZapResponse returns
   
   fun ref _write_ready()? =>
     let ready_box: CommandAuthCurveReadyBox ref = CommandAuthCurveReadyBox

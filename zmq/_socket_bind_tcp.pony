@@ -23,8 +23,9 @@ class _SocketBindTCPListenNotify is TCPListenNotify
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
     _SocketTCPNotify(_SocketPeerTCPBound(_parent, _socket_opts))
 
-actor _SocketPeerTCPBound is _SocketTCPNotifiable
+actor _SocketPeerTCPBound is (_SocketTCPNotifiable & _ZapResponseNotifiable)
   let _parent: Socket
+  let _socket_opts: SocketOptions val
   var _inner: (_SocketTCPTarget | None) = None
   var _active: Bool
   let _messages: _MessageQueue = _MessageQueue
@@ -32,6 +33,7 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
   
   new create(parent: Socket, socket_opts: SocketOptions val) =>
     _parent = parent
+    _socket_opts = socket_opts
     _inner = None
     _active = false
     _session = _SessionKeeper(socket_opts)
@@ -45,14 +47,15 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
     _messages.send(message, _inner, _active)
   
   ///
-  // _SocketTCPNotifiable private interface behaviors
+  // _SocketTCPNotifiable interface behaviors
   
   be notify_start(target: _SocketTCPTarget) =>
     _session.start(where
       handle_activated      = this~_handle_activated(target),
       handle_protocol_error = this~_handle_protocol_error(),
       handle_write          = this~_handle_write(target),
-      handle_received       = this~_handle_received()
+      handle_received       = this~_handle_received(),
+      handle_zap_request    = this~_handle_zap_request()
     )
   
   be notify_input(data: Array[U8] iso) =>
@@ -63,6 +66,12 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
   
   be notify_connect_failed() =>
     dispose()
+  
+  ///
+  // _ZapResponseNotifiable interface behaviors
+  
+  be notify_zap_response(zap: _ZapResponse) =>
+    _session.handle_zap_response(zap)
   
   ///
   // Session handler methods
@@ -83,3 +92,7 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
   
   fun ref _handle_received(message: Message) =>
     _parent._received(this, message)
+  
+  fun ref _handle_zap_request(zap: _ZapRequest) =>
+    let ctx = _ContextAsSocketOption.find_in(_socket_opts)
+    ctx._zap_request(this, zap)

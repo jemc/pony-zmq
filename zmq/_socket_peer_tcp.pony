@@ -5,7 +5,7 @@
 use "time"
 use "net"
 
-actor _SocketPeerTCP is _SocketTCPNotifiable
+actor _SocketPeerTCP is (_SocketTCPNotifiable & _ZapResponseNotifiable)
   let _parent: Socket
   let _socket_opts: SocketOptions val
   let _endpoint: EndpointTCP
@@ -50,14 +50,15 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
     end
   
   ///
-  // _SocketTCPNotifiable private interface behaviors
+  // _SocketTCPNotifiable interface behaviors
   
   be notify_start(target: _SocketTCPTarget) =>
     _session.start(where
       handle_activated      = this~_handle_activated(target),
       handle_protocol_error = this~_handle_protocol_error(),
       handle_write          = this~_handle_write(target),
-      handle_received       = this~_handle_received()
+      handle_received       = this~_handle_received(),
+      handle_zap_request    = this~_handle_zap_request()
     )
   
   be notify_input(data: Array[U8] iso) =>
@@ -70,6 +71,12 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   be notify_connect_failed() =>
     _active = false
     _reconnect_later()
+  
+  ///
+  // _ZapResponseNotifiable interface behaviors
+  
+  be notify_zap_response(zap: _ZapResponse) =>
+    _session.handle_zap_response(zap)
   
   ///
   // Session handler methods
@@ -91,3 +98,7 @@ actor _SocketPeerTCP is _SocketTCPNotifiable
   
   fun ref _handle_received(message: Message) =>
     _parent._received(this, message)
+  
+  fun ref _handle_zap_request(zap: _ZapRequest) =>
+    let ctx = _ContextAsSocketOption.find_in(_socket_opts)
+    ctx._zap_request(this, zap)
