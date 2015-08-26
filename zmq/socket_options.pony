@@ -8,16 +8,7 @@ use "./inspect"
 ///
 // Generic structures
 
-type SocketOptionValue is
-  ( Bool
-  | U64
-  | F64
-  | String
-  | (String | None)
-  | SocketType
-  | Context)
-
-interface SocketOption[A: SocketOptionValue] tag
+interface SocketOption[A: (Any val | Any tag)] tag
   fun tag apply(value: A): _SocketOptionWithValue[A] =>
     _SocketOptionWithValue[A](this, value)
   
@@ -43,7 +34,7 @@ interface SocketOption[A: SocketOptionValue] tag
   fun tag set_in(list: SocketOptions, value: A): Bool =>
     apply(value).set_in(list)
 
-class _SocketOptionWithValue[A: SocketOptionValue] val
+class _SocketOptionWithValue[A: (Any val | Any tag)] val
   let option: SocketOption[A]
   let value: A
   fun option_tag(): Any tag => option
