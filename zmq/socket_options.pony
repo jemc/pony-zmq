@@ -103,7 +103,6 @@ interface _SocketOptionCurveKey is SocketOption[String]
 
 primitive CurveAsServer is SocketOption[Bool]
   """
-  NOT YET IMPLEMENTED.
   Indicates that the socket should act as a server for CURVE encryption.
   If set to true, the other socket must act as a client, and must know the
   public key of the server socket prior to connecting.
@@ -112,7 +111,6 @@ primitive CurveAsServer is SocketOption[Bool]
 
 primitive CurvePublicKey is _SocketOptionCurveKey
   """
-  NOT YET IMPLEMENTED.
   The local public key to use for CURVE encryption, as a string.
   Both the server and the client socket must set a public key,
   which may be distributed to others to establish a trusted identity.
@@ -122,7 +120,6 @@ primitive CurvePublicKey is _SocketOptionCurveKey
 
 primitive CurveSecretKey is _SocketOptionCurveKey
   """
-  NOT YET IMPLEMENTED.
   The local secret key to use for CURVE encryption, as a string.
   Both the server and the client socket must set a secret key,
   and must keep their secret key secret to maintain security.
@@ -132,7 +129,6 @@ primitive CurveSecretKey is _SocketOptionCurveKey
 
 primitive CurvePublicKeyOfServer is _SocketOptionCurveKey
   """
-  NOT YET IMPLEMENTED.
   The expected public key of the remote server when using CURVE encryption.
   The client socket must set this option before connecting to a server
   and it must correlate to the secret key of the server socket
