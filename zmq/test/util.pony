@@ -1,6 +1,5 @@
 
 use "collections"
-use "../inspect"
 use zmq = ".."
 
 interface _LambdaPartial iso
