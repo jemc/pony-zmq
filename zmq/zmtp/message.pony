@@ -7,7 +7,7 @@ use "../inspect"
 
 type Frame is String
 
-class Message val is (Stringable & Comparable[Message box] & Seq[Frame])
+class Message val is (Stringable & Equatable[Message box] & Seq[Frame])
   let _inner: List[Frame] = _inner.create()
   new create(len: U64 = 0) => None
   
