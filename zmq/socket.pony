@@ -158,9 +158,6 @@ actor Socket
     bind'.dispose()
   
   fun ref _maybe_send_messages() =>
-    """
-    If and while messages and peers are available (non-erroring), send them.
-    """
     try while true do
       let m = _outgoing.shift()
       try _handle_out(m)
