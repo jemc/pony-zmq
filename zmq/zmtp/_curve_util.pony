@@ -5,7 +5,7 @@
 use "../../../pony-sodium/sodium"
 
 primitive _CurveUtil
-  fun tag message_writex(pk: CryptoBoxPublicKey, sk: CryptoBoxSecretKey,
+  fun tag message_writex(sk: CryptoBoxSecretKey, pk: CryptoBoxPublicKey,
     nonce_gen: _CurveNonceGenerator iso^, nonce_prefix: String,
     message: Message box
   ): Array[U8] val =>
@@ -23,7 +23,7 @@ primitive _CurveUtil
         let short_nonce = nonce_gen.next_short()
         let nonce = CryptoBoxNonce(nonce_prefix + short_nonce)
         command.short_nonce = short_nonce
-        command.data_box = try CryptoBox(message_box.string(), nonce, pk, sk) else
+        command.data_box = try CryptoBox(message_box.string(), nonce, sk, pk) else
                              ""  // TODO: some way to protocol-error from here?
                            end
         output.append(CommandParser.write(command))
