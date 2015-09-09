@@ -6,13 +6,13 @@ primitive SocketTransportTests is TestList
   fun tag tests(test: PonyTest) =>
     
     test(SocketTransportTest("TCP",
-      recover lambda(a: zmq.Socket, b: zmq.Socket) =>
+      lambda iso(a: zmq.Socket, b: zmq.Socket) =>
         a.bind("tcp://localhost:8888")
         b.connect("tcp://localhost:8888")
-      end end))
+      end))
     
     test(SocketTransportTest("TCP + Curve",
-      recover lambda(a: zmq.Socket, b: zmq.Socket) =>
+      lambda iso(a: zmq.Socket, b: zmq.Socket) =>
         a.set(zmq.CurvePublicKey("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         a.set(zmq.CurveSecretKey("mjr{I->@v1rhtZ<zka05x/<RUS[3s{-eN.jtVgr&"))
         a.set(zmq.CurveAsServer(true))
@@ -23,13 +23,13 @@ primitive SocketTransportTests is TestList
         
         a.bind("tcp://localhost:8899")
         b.connect("tcp://localhost:8899")
-      end end))
+      end))
     
     test(SocketTransportTest("inproc",
-      recover lambda(a: zmq.Socket, b: zmq.Socket) =>
+      lambda iso(a: zmq.Socket, b: zmq.Socket) =>
         a.bind("inproc://SocketTransportTest")
         b.connect("inproc://SocketTransportTest")
-      end end))
+      end))
 
 interface _SocketTransportTestsSetupLambda val
   fun apply(a: zmq.Socket, b: zmq.Socket)
@@ -53,20 +53,20 @@ class SocketTransportTest is UnitTest
     a.send(recover zmq.Message.push("foo") end)
     b.send(recover zmq.Message.push("bar") end)
     
-    ra.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
+    ra.next(lambda iso(m: zmq.Message)(h,a) =>
       h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
-      s.dispose()
-    end~apply(h,a) end)
+      a.dispose()
+    end)
     
-    rb.next(recover lambda(h: TestHelper, s: zmq.Socket, m: zmq.Message) =>
+    rb.next(lambda iso(m: zmq.Message)(h,b) =>
       h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
-      s.dispose()
-    end~apply(h,b) end)
+      b.dispose()
+    end)
     
-    ra.when_closed(recover lambda(h: TestHelper, rb: _SocketReactor) =>
-      rb.when_closed(recover lambda(h: TestHelper) =>
-        h.complete(true)
-      end~apply(h) end)
-    end~apply(h,rb) end)
+    ra.when_closed(lambda iso()(h,rb) =>
+      rb.when_closed(lambda iso()(h' = h) => // TODO: avoid h' here
+        h'.complete(true)
+      end)
+    end)
     
     LongTest
