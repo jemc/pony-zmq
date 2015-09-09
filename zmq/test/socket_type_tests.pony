@@ -57,8 +57,8 @@ interface SocketTypeTest is UnitTest
   
   fun tag wait_2_reactors(h: TestHelper, ra: _SocketReactor, rb: _SocketReactor): LongTest =>
     ra.when_closed(lambda iso()(h, rb) =>
-      rb.when_closed(lambda iso()(h' = h) =>
-        h'.complete(true)
+      rb.when_closed(lambda iso()(h) =>
+        h.complete(true)
       end)
     end)
     
@@ -66,9 +66,9 @@ interface SocketTypeTest is UnitTest
   
   fun tag wait_3_reactors(h: TestHelper, ra: _SocketReactor, rb: _SocketReactor, rc: _SocketReactor): LongTest =>
     ra.when_closed(lambda iso()(h, rb, rc) =>
-      rb.when_closed(lambda iso()(h' = h, rc' = rc) =>
-        rc'.when_closed(lambda iso()(hh' = h') =>
-          hh'.complete(true)
+      rb.when_closed(lambda iso()(h, rc) =>
+        rc.when_closed(lambda iso()(h) =>
+          h.complete(true)
         end)
       end)
     end)

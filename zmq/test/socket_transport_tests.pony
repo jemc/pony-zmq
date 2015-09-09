@@ -64,8 +64,8 @@ class SocketTransportTest is UnitTest
     end)
     
     ra.when_closed(lambda iso()(h,rb) =>
-      rb.when_closed(lambda iso()(h' = h) => // TODO: avoid h' here
-        h'.complete(true)
+      rb.when_closed(lambda iso()(h) =>
+        h.complete(true)
       end)
     end)
     
