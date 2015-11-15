@@ -6,7 +6,7 @@ use "../../../pony-sodium/sodium"
 
 primitive _CurveUtil
   fun tag message_writex(sk: CryptoBoxSecretKey, pk: CryptoBoxPublicKey,
-    nonce_gen: _CurveNonceGenerator iso^, nonce_prefix: String,
+    nonce_gen: _CurveNonceGenerator, nonce_prefix: String,
     message: Message box
   ): Array[U8] val =>
     let output = recover trn Array[U8] end

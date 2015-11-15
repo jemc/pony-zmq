@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface SocketType val
+interface val SocketType
   fun tag string(): String
   fun tag accepts(other: String): Bool
   fun tag handle_outgoing(): _HandleOutgoing

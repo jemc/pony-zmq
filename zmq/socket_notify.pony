@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface SocketNotify iso
+interface iso SocketNotify
   fun ref received(socket: Socket, peer: SocketPeer, message: Message) =>
     """
     Called when a new message is received from a peer.
@@ -27,16 +27,16 @@ interface SocketNotify iso
     """
     None
 
-class SocketNotifyNone iso is SocketNotify
+class iso SocketNotifyNone is SocketNotify
   new iso create() => None
 
-interface SocketNotifiableActor tag
+interface tag SocketNotifiableActor
   be received(socket: Socket, peer: SocketPeer, message: Message) => None
   be new_peer(socket: Socket, peer: SocketPeer) => None
   be lost_peer(socket: Socket, peer: SocketPeer) => None
   be closed(socket: Socket) => None
 
-class SocketNotifyActor iso is SocketNotify
+class iso SocketNotifyActor is SocketNotify
   let _parent: SocketNotifiableActor
   new iso create(parent: SocketNotifiableActor) => _parent = parent
   

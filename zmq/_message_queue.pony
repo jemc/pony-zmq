@@ -4,8 +4,8 @@
 
 use "collections"
 
-interface _MessageQueueWritable tag
-  be write(data: Bytes)
+interface tag _MessageQueueWritable
+  be write(data: ByteSeq)
 
 class _MessageQueue
   let _inner: List[Message] = _inner.create()
@@ -47,7 +47,7 @@ class _MessageQueue
       push(message)
     end
 
-interface _MessageQueueSimpleReceivable tag
+interface tag _MessageQueueSimpleReceivable
   be received(message: Message)
 
 // TODO: Remove this class and reconcile with refactored _MessageQueue above.

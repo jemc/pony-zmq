@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class ZapRequest val
+class val ZapRequest
   var version: String = "1.0"
   var id: String = ""
   var domain: String = ""
@@ -39,7 +39,7 @@ class ZapRequest val
     end
     out
 
-class ZapResponse val
+class val ZapResponse
   var version: String = "1.0"
   var id: String = ""
   var status_code: String = "200"
@@ -73,5 +73,5 @@ class ZapResponse val
     out.push(CommandUtil.write_string_as_metadata(metadata))
     out
 
-interface ZapResponseNotifiable tag
+interface tag ZapResponseNotifiable
   be notify_zap_response(zap: ZapResponse)

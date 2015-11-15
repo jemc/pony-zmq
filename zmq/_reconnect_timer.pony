@@ -4,7 +4,7 @@
 
 use "time"
 
-interface _ReconnectTimerNotifiable tag
+interface tag _ReconnectTimerNotifiable
   be _reconnect_timer_fire()
 
 class _ReconnectTimerNotify is TimerNotify

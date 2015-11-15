@@ -6,17 +6,17 @@ use "collections"
 use "time"
 use "./inspect"
 
-interface SocketPeer tag // public, limited
+interface tag SocketPeer // public, limited
   be send(message: Message)
 
-interface _SocketPeer tag
+interface tag _SocketPeer
   be send(message: Message)
   be dispose()
 
-interface _SocketBind tag
+interface tag _SocketBind
   be dispose()
 
-interface SocketAccessLambda iso
+interface iso SocketAccessLambda
   fun ref apply(socket: Socket ref)
 
 actor Socket

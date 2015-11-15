@@ -93,7 +93,7 @@ actor _SocketPeerTCP is (_SocketTCPNotifiable & _ZapResponseNotifiable)
     _reconnect_later()
     _parent._protocol_error(this, string)
   
-  fun ref _handle_write(target: _SocketTCPTarget, bytes: Bytes) =>
+  fun ref _handle_write(target: _SocketTCPTarget, bytes: ByteSeq) =>
     target.write(bytes)
   
   fun ref _handle_received(message: Message) =>

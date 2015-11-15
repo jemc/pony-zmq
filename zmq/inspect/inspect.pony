@@ -21,13 +21,13 @@ primitive Inspect
         while iter.has_next() do
           let byte = iter.next()
           if byte < 0x10 then
-            output.append("\\x0" + byte.string(IntHexBare))
+            output.append("\\x0" + byte.string(FormatHexBare))
           elseif byte < 0x20 then
-            output.append("\\x" + byte.string(IntHexBare))
+            output.append("\\x" + byte.string(FormatHexBare))
           elseif byte < 0x7F then
             output.push(byte)
           else
-            output.append("\\x" + byte.string(IntHexBare))
+            output.append("\\x" + byte.string(FormatHexBare))
           end
         end
       end
@@ -39,15 +39,15 @@ primitive Inspect
         while iter.has_next() do
           let byte = iter.next()
           if byte < 0x10 then
-            output.append("0x0" + byte.string(IntHexBare))
+            output.append("0x0" + byte.string(FormatHexBare))
           elseif byte < 0x20 then
-            output.append("0x" + byte.string(IntHexBare))
+            output.append("0x" + byte.string(FormatHexBare))
           elseif byte < 0x7F then
             output.append(" '")
             output.push(byte)
             output.append("'")
           else
-            output.append("0x" + byte.string(IntHexBare))
+            output.append("0x" + byte.string(FormatHexBare))
           end
           if iter.has_next() then output.append(", ") end
         end

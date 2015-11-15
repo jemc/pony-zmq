@@ -7,7 +7,7 @@ use "collections"
 ///
 // Generic structures
 
-interface SocketOption[A: (Any val | Any tag)] tag
+interface tag SocketOption[A: (Any val | Any tag)]
   fun tag apply(value: A): _SocketOptionWithValue[A] =>
     _SocketOptionWithValue[A](this, value)
   
@@ -33,7 +33,7 @@ interface SocketOption[A: (Any val | Any tag)] tag
   fun tag set_in(list: SocketOptions, value: A): Bool =>
     apply(value).set_in(list)
 
-class _SocketOptionWithValue[A: (Any val | Any tag)] val
+class val _SocketOptionWithValue[A: (Any val | Any tag)]
   let option: SocketOption[A]
   let value: A
   fun option_tag(): Any tag => option
@@ -60,7 +60,7 @@ class _SocketOptionWithValue[A: (Any val | Any tag)] val
       false
     end
 
-interface SocketOptionWithValue val
+interface val SocketOptionWithValue
   fun option_tag(): Any tag
   fun val set_in(list: SocketOptions): Bool
 

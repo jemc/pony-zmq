@@ -5,10 +5,10 @@
 use "net"
 use zmtp = "zmtp"
 
-interface _SocketTCPTarget tag is _MessageQueueWritable
+interface tag _SocketTCPTarget is _MessageQueueWritable
   be dispose()
 
-interface _SocketTCPNotifiable tag
+interface tag _SocketTCPNotifiable
   be notify_start(target: _SocketTCPTarget)
   be notify_input(data: Array[U8] iso)
   be notify_closed()

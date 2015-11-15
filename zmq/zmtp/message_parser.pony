@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface MessageWriteTransform iso
+interface iso MessageWriteTransform
   fun ref apply(message: Message): Array[U8] val
 
 class MessageParser
@@ -44,7 +44,7 @@ class MessageParser
                  | 0x00 | 0x01 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
                  | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)
                  else
-                   protocol_error("unknown frame ident byte: " + ident.string(IntHex))
+                   protocol_error("unknown frame ident byte: " + ident.string(FormatHex))
                    error
                  end
       

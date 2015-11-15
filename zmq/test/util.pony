@@ -2,16 +2,16 @@
 use "collections"
 use zmq = ".."
 
-interface _LambdaPartial iso
+interface iso _LambdaPartial
   fun ref apply() => None
 
-interface _MessageLambdaPartial iso
+interface iso _MessageLambdaPartial
   fun ref apply(message: zmq.Message) => None
 
-interface _PeerMessageLambdaPartial iso
+interface iso _PeerMessageLambdaPartial
   fun ref apply(peer: zmq.SocketPeer, message: zmq.Message) => None
 
-interface _MessageListLambdaPartial iso
+interface iso _MessageListLambdaPartial
   fun ref apply(message: List[zmq.Message]) => None
 
 type _SocketReactorHandler is

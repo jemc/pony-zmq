@@ -21,7 +21,7 @@ primitive CommandParser
     // Write the ident, size, and the inner byte array to the output byte array.
     output.push(ident)
     output.append(_Util.make_bytes(size))
-    output.append(inner)
+    output.append(consume inner)
     
     output
   
@@ -41,7 +41,7 @@ primitive CommandParser
                | 0x02 => offset = offset + 8; buffer.peek_u64_be(1)
                | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)
                else
-                 protocol_error("unknown command ident byte: " + ident.string(IntHex))
+                 protocol_error("unknown command ident byte: " + ident.string(FormatHex))
                  error
                end
     

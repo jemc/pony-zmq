@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface Endpoint val
+interface val Endpoint
   new val from_uri(string: String)?
   fun to_uri(): String
 
@@ -14,12 +14,12 @@ primitive EndpointParser
     end end
 
 
-class EndpointUnknown val is Endpoint
+class val EndpointUnknown is Endpoint
   let uri: String
   new val from_uri(string: String) => uri = string
   fun to_uri(): String => uri
 
-class EndpointTCP val is Endpoint
+class val EndpointTCP is Endpoint
   let schema: String = "tcp://"
   let host: String
   let port: String
@@ -35,7 +35,7 @@ class EndpointTCP val is Endpoint
   fun to_uri(): String =>
     schema + host + ":" + port
 
-class EndpointInProc val is Endpoint
+class val EndpointInProc is Endpoint
   let schema: String = "inproc://"
   let path: String
   
