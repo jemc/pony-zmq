@@ -98,9 +98,18 @@ primitive Inspect
     """
     _STDOUT.write_line(string)
   
-  fun out(input: _Inspectable) =>
+  fun out(input: _Inspectable, input2: _Inspectable = None,
+          input3: _Inspectable = None, input4: _Inspectable = None) =>
     """
     Print the inspect form of an object to the STDOUT stream.
     This is for debugging purposes only, as it is not concurrency-safe.
     """
-    print(apply(input))
+    if input4 isnt None then
+      print(apply(input) + ", " + apply(input2) + ", " + apply(input3) + ", " + apply(input4))
+    elseif input3 isnt None then
+      print(apply(input) + ", " + apply(input2) + ", " + apply(input3))
+    elseif input2 isnt None then
+      print(apply(input) + ", " + apply(input2))
+    else
+      print(apply(input))
+    end
