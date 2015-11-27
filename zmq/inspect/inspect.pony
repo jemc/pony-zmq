@@ -4,6 +4,9 @@ use "collections"
 
 type _Inspectable is Any box
 
+interface _StringableNoArg
+  fun string(): String
+
 primitive Inspect
   fun apply(input: _Inspectable): String val =>
     """
@@ -78,7 +81,8 @@ primitive Inspect
         end
       end
       output.push('}')
-    | let x: Stringable box => output.append(x.string())
+    | let x: Stringable box       => output.append(x.string())
+    | let x: _StringableNoArg box => output.append(x.string())
     | let x: net.Buffer box =>
       let ary = Array[U8]
       for i in Range(0, x.size()) do
