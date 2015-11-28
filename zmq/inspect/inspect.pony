@@ -35,7 +35,7 @@ primitive Inspect
         end
       end
       output.push('"')
-    | let x: Array[U8] box =>
+    | let x: ReadSeq[U8] box =>
       output.push('[')
       let iter = x.values()
       try
