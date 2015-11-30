@@ -42,7 +42,7 @@ actor Socket
     _handle_out = socket_type.handle_outgoing()
     _observe_in = socket_type.observe_incoming()
     _observe_out = socket_type.observe_outgoing()
-    _SocketTypeAsSocketOption(socket_type).set_in(_socket_opts)
+    _SocketOptionsUtil.set_in(_SocketTypeAsSocketOption(socket_type), _socket_opts)
   
   new _create_in(context: Context, socket_type: SocketType, notify: SocketNotify) =>
     _notify = consume notify
@@ -50,8 +50,8 @@ actor Socket
     _handle_out = socket_type.handle_outgoing()
     _observe_in = socket_type.observe_incoming()
     _observe_out = socket_type.observe_outgoing()
-    _ContextAsSocketOption(context).set_in(_socket_opts)
-    _SocketTypeAsSocketOption(socket_type).set_in(_socket_opts)
+    _SocketOptionsUtil.set_in(_ContextAsSocketOption(context), _socket_opts)
+    _SocketOptionsUtil.set_in(_SocketTypeAsSocketOption(socket_type), _socket_opts)
   
   be dispose() =>
     _timers.dispose()
@@ -100,7 +100,7 @@ actor Socket
   
   be set(optval: SocketOptionWithValue) => set_now(optval)
   fun ref set_now(optval: SocketOptionWithValue) =>
-    optval.set_in(_socket_opts)
+    _SocketOptionsUtil.set_in(optval, _socket_opts)
   
   be connect(string: String) => connect_now(string)
   fun ref connect_now(string: String) =>

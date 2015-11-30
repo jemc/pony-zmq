@@ -7,7 +7,7 @@ use "collections"
 ///
 // Generic structures
 
-interface tag SocketOption[A: (Any val | Any tag)]
+interface tag SocketOption[A: Any #share]
   fun tag apply(value: A): _SocketOptionWithValue[A] =>
     _SocketOptionWithValue[A](this, value)
   
@@ -31,24 +31,32 @@ interface tag SocketOption[A: (Any val | Any tag)]
     end
   
   fun tag set_in(list: SocketOptions, value: A): Bool =>
-    apply(value).set_in(list)
+    _SocketOptionsUtil.set_in(apply(value), list)
 
-class val _SocketOptionWithValue[A: (Any val | Any tag)]
+class val _SocketOptionWithValue[A: Any #share] is SocketOptionWithValue
   let option: SocketOption[A]
   let value: A
   fun option_tag(): Any tag => option
+  fun validate(): None? => option.validate(value)
   new val create(option': SocketOption[A], value': A) =>
     option = option'
     value = value'
-  
-  fun val set_in(list: SocketOptions): Bool =>
-    try option.validate(value) else return false end
+
+interface val SocketOptionWithValue
+  fun option_tag(): Any tag
+  fun validate(): None?
+
+type SocketOptions is List[SocketOptionWithValue]
+
+primitive _SocketOptionsUtil
+  fun val set_in(this_opt: SocketOptionWithValue, list: SocketOptions): Bool =>
+    try this_opt.validate() else return false end
     
-    match this | let optval: SocketOptionWithValue =>
+    match this_opt | let optval: SocketOptionWithValue =>
       for other_node in list.nodes() do
         try
           let other = other_node()
-          if other.option_tag() is option then
+          if other.option_tag() is this_opt.option_tag() then
             other_node.remove()
           end
         end
@@ -59,12 +67,6 @@ class val _SocketOptionWithValue[A: (Any val | Any tag)]
     else
       false
     end
-
-interface val SocketOptionWithValue
-  fun option_tag(): Any tag
-  fun val set_in(list: SocketOptions): Bool
-
-type SocketOptions is List[SocketOptionWithValue]
 
 ///
 // Internal-only socket options
