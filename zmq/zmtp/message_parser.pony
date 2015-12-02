@@ -36,13 +36,13 @@ class MessageParser
     var has_more: Bool = true
     
     while has_more do
-      var offset: U64 = 0
+      var offset: USize = 0
       
       // Peek ident byte to determine number of size bytes, then peek size.
       let ident = buffer.peek_u8(); offset = offset + 1
       let size = match ident
-                 | 0x00 | 0x01 => offset = offset + 1; U64.from[U8](buffer.peek_u8(1))
-                 | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)
+                 | 0x00 | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
+                 | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                  else
                    protocol_error("unknown frame ident byte: " + ident.string(FormatHex))
                    error

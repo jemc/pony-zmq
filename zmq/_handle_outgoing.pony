@@ -37,7 +37,7 @@ class _HandleOutgoingRoundRobin is _HandleOutgoing
   Route each outgoing message to a different peer in a round-robin order.
   """
   let _peers: List[_SocketPeer] = _peers.create()
-  var _robin: U64 = 0 // TODO: Linked-list-oriented implementation.
+  var _robin: USize = 0 // TODO: Linked-list-oriented implementation.
   
   fun ref new_peer(p: _SocketPeer) => _peers.push(p)
   

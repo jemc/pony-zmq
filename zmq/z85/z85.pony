@@ -43,11 +43,11 @@ primitive Z85
     for byte in input.values() do
       u32 = (u32 << 8) + byte.u32()
       if idx == 3 then
-        output.push(table(((u32 / 52200625) % 85).u64()))
-        output.push(table(((u32 /   614125) % 85).u64()))
-        output.push(table(((u32 /     7225) % 85).u64()))
-        output.push(table(((u32 /       85) % 85).u64()))
-        output.push(table(((u32           ) % 85).u64()))
+        output.push(table(((u32 / 52200625) % 85).usize()))
+        output.push(table(((u32 /   614125) % 85).usize()))
+        output.push(table(((u32 /     7225) % 85).usize()))
+        output.push(table(((u32 /       85) % 85).usize()))
+        output.push(table(((u32           ) % 85).usize()))
       u32 = 0 end
     idx = (idx + 1) % 4 end
     
@@ -62,7 +62,7 @@ primitive Z85
     var u32: U32 = 0
     var idx: U8 = 0
     for byte in input.values() do
-      u32 = (u32 * 85) + (table(byte.u64() - 32) as U8).u32()
+      u32 = (u32 * 85) + (table(byte.usize() - 32) as U8).u32()
       if idx == 4 then
         output.push((u32 >> 24).u8())
         output.push((u32 >> 16).u8())
