@@ -16,7 +16,7 @@ primitive CommandParser
     // Determine the ident and size bytewidth based on the size itself.
     let is_short = inner.size() <= 0xFF
     let ident: U8 = if is_short then 0x04 else 0x06 end
-    let size      = if is_short then inner.size().u8() else inner.size() end
+    let size      = if is_short then inner.size().u8() else inner.size().u64() end
     
     // Write the ident, size, and the inner byte array to the output byte array.
     output.push(ident)

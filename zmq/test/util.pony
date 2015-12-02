@@ -17,7 +17,7 @@ interface iso _MessageListLambdaPartial
 type _SocketReactorHandler is
   ( _MessageLambdaPartial
   | _PeerMessageLambdaPartial
-  | (U64, _MessageListLambdaPartial))
+  | (USize, _MessageListLambdaPartial))
 
 actor _SocketReactor is zmq.SocketNotifiableActor
   let _messages: List[(zmq.SocketPeer, zmq.Message)] = _messages.create()
@@ -34,7 +34,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
     _handlers.push(consume handler)
     maybe_run_handlers()
   
-  be next_n(n: U64, handler: _MessageListLambdaPartial) =>
+  be next_n(n: USize, handler: _MessageListLambdaPartial) =>
     _handlers.push((n, consume handler))
     maybe_run_handlers()
   
@@ -62,7 +62,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
           (let peer, let message) = _messages.shift()
           (consume h)(peer, message)
         
-        | (var n: U64, let h: _MessageListLambdaPartial) =>
+        | (var n: USize, let h: _MessageListLambdaPartial) =>
           if _messages.size() < n then _handlers.unshift((n, consume h)); error end
           
           let list = List[zmq.Message]
