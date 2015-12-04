@@ -6,13 +6,13 @@ primitive SocketTransportTests is TestList
   fun tag tests(test: PonyTest) =>
     
     test(SocketTransportTest("TCP",
-      lambda iso(a: zmq.Socket, b: zmq.Socket) =>
+      lambda val(a: zmq.Socket, b: zmq.Socket) =>
         a.bind("tcp://localhost:8888")
         b.connect("tcp://localhost:8888")
       end))
     
     test(SocketTransportTest("TCP + Curve",
-      lambda iso(a: zmq.Socket, b: zmq.Socket) =>
+      lambda val(a: zmq.Socket, b: zmq.Socket) =>
         a.set(zmq.CurvePublicKey("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         a.set(zmq.CurveSecretKey("mjr{I->@v1rhtZ<zka05x/<RUS[3s{-eN.jtVgr&"))
         a.set(zmq.CurveAsServer(true))
@@ -26,13 +26,13 @@ primitive SocketTransportTests is TestList
       end))
     
     test(SocketTransportTest("inproc",
-      lambda iso(a: zmq.Socket, b: zmq.Socket) =>
+      lambda val(a: zmq.Socket, b: zmq.Socket) =>
         a.bind("inproc://SocketTransportTest")
         b.connect("inproc://SocketTransportTest")
       end))
 
 interface val _SocketTransportTestsSetupLambda
-  fun apply(a: zmq.Socket, b: zmq.Socket)
+  fun val apply(a: zmq.Socket, b: zmq.Socket)
 
 class SocketTransportTest is UnitTest
   let _desc: String

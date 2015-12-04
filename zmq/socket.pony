@@ -17,7 +17,7 @@ interface tag _SocketBind
   be dispose()
 
 interface iso SocketAccessLambda
-  fun ref apply(socket: Socket ref)
+  fun iso apply(socket: Socket ref)
 
 actor Socket
   let _notify: SocketNotify ref

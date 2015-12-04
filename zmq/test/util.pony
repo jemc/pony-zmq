@@ -3,16 +3,16 @@ use "collections"
 use zmq = ".."
 
 interface iso _LambdaPartial
-  fun ref apply() => None
+  fun iso apply() => None
 
 interface iso _MessageLambdaPartial
-  fun ref apply(message: zmq.Message) => None
+  fun iso apply(message: zmq.Message) => None
 
 interface iso _PeerMessageLambdaPartial
-  fun ref apply(peer: zmq.SocketPeer, message: zmq.Message) => None
+  fun iso apply(peer: zmq.SocketPeer, message: zmq.Message) => None
 
 interface iso _MessageListLambdaPartial
-  fun ref apply(message: List[zmq.Message]) => None
+  fun iso apply(message: List[zmq.Message]) => None
 
 type _SocketReactorHandler is
   ( _MessageLambdaPartial
@@ -78,8 +78,8 @@ actor _SocketReactor is zmq.SocketNotifiableActor
   
   fun ref maybe_run_closed_handler() =>
     if _closed and not _ran_closed_handler then
-      try
-        (_closed_handler as _LambdaPartial).apply()
+      match (_closed_handler = None) | let closed_handler: _LambdaPartial =>
+        (consume closed_handler)()
         _ran_closed_handler = true
       end
     end
