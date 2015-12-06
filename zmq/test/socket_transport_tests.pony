@@ -66,7 +66,6 @@ class SocketTransportTest is UnitTest
     ra.when_closed(lambda iso()(h,rb) =>
       rb.when_closed(lambda iso()(h) =>
         h.complete(true)
-        None
       end)
     end)
     
