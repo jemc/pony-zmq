@@ -157,8 +157,8 @@ class CommandAuthCurveWelcomeBox
     output
   
   fun ref apply(data: String): CommandAuthCurveWelcomeBox =>
-    st_pk = CryptoBoxPublicKey(data.substring(0, 31))
-    cookie = data.substring(32, -1)
+    st_pk = CryptoBoxPublicKey(data.substring(0, 32))
+    cookie = data.substring(32)
     this
 
 class CommandAuthCurveInitiateBox
@@ -176,10 +176,10 @@ class CommandAuthCurveInitiateBox
     output
   
   fun ref apply(data: String): CommandAuthCurveInitiateBox =>
-    c_pk = CryptoBoxPublicKey(data.substring(0, 31))
-    long_nonce = data.substring(32, 47)
-    vouch_box = data.substring(48, 127)
-    CommandUtil.read_string_as_metadata(metadata, data.substring(128, -1))
+    c_pk = CryptoBoxPublicKey(data.substring(0, 32))
+    long_nonce = data.substring(32, 48)
+    vouch_box = data.substring(48, 128)
+    CommandUtil.read_string_as_metadata(metadata, data.substring(128))
     this
 
 class CommandAuthCurveInitiateVouchBox
@@ -193,8 +193,8 @@ class CommandAuthCurveInitiateVouchBox
     output
   
   fun ref apply(data: String): CommandAuthCurveInitiateVouchBox =>
-    ct_pk = CryptoBoxPublicKey(data.substring(0, 31))
-    s_pk = CryptoBoxPublicKey(data.substring(32, 63))
+    ct_pk = CryptoBoxPublicKey(data.substring(0, 32))
+    s_pk = CryptoBoxPublicKey(data.substring(32, 64))
     this
 
 class CommandAuthCurveReadyBox
@@ -223,5 +223,5 @@ class CommandAuthCurveMessageBox
   fun ref apply(data: String): CommandAuthCurveMessageBox =>
     let flags = try data(0) else 0x00 end
     has_more = flags != 0x00
-    payload = data.substring(1, -1)
+    payload = data.substring(1)
     this

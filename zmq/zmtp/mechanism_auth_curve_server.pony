@@ -111,14 +111,14 @@ class MechanismAuthCurveServer is Mechanism
   fun ref _read_initiate(buffer: _Buffer ref)? =>
     let command = _session._read_specific_command[CommandAuthCurveInitiate](buffer)
     
-    let cookie = try CryptoSecretBox.open(command.cookie.substring(16, -1),
-                       CryptoSecretBoxNonce("COOKIE--" + command.cookie.substring(0, 15)),
+    let cookie = try CryptoSecretBox.open(command.cookie.substring(16),
+                       CryptoSecretBoxNonce("COOKIE--" + command.cookie.substring(0, 16)),
                          _cookie_key) else
                    _session.protocol_error("couldn't open INITIATE cookie box")
                    error
                  end
-    if (cookie.substring(0, 31) != _ct_pk.string())
-    or (cookie.substring(32, 63) != _st_sk.string()) then
+    if (cookie.substring(0, 32) != _ct_pk.string())
+    or (cookie.substring(32, 64) != _st_sk.string()) then
       _session.protocol_error("got incorrect INITIATE cookie")
       error
     end
