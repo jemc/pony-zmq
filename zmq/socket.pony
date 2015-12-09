@@ -4,7 +4,7 @@
 
 use "collections"
 use "time"
-use "./inspect"
+use "inspect"
 
 interface tag SocketPeer // public, limited
   be send(message: Message)

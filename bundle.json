@@ -1,0 +1,6 @@
+{
+  "deps": [
+    { "type": "github", "repo": "jemc/pony-inspect" },
+    { "type": "github", "repo": "jemc/pony-sodium" }
+  ]
+}

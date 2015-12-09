@@ -1,1 +1,2 @@
-zmq/test/test
+bin/test
+.deps

@@ -3,7 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use "collections"
-use "../../../pony-sodium/sodium"
+use "sodium"
 
 class CommandAuthCurveHello is Command
   var version_major: U8 = 1

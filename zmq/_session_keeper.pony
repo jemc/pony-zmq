@@ -5,7 +5,7 @@
 use net = "net"
 use z85 = "z85"
 use zmtp = "zmtp"
-use "../../pony-sodium/sodium"
+use "sodium"
 
 class _SessionKeeper
   let _socket_opts: SocketOptions val
