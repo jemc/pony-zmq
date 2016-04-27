@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use "collections"
+use zmtp = "zmtp"
 
 interface tag _MessageQueueWritable
   be write(data: ByteSeq)
@@ -10,7 +11,7 @@ interface tag _MessageQueueWritable
 class _MessageQueue
   let _inner: List[Message] = _inner.create()
   var _empty: Bool = true
-  var _write_transform: _MessageWriteTransform = recover _MessageParser~write() end
+  var _write_transform: _MessageWriteTransform = recover zmtp.MessageWriter end
   
   fun ref set_write_transform(writex: _MessageWriteTransform) =>
     _write_transform = consume writex

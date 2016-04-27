@@ -22,8 +22,10 @@ class val Message is (Stringable & Equatable[Message box] & Seq[Frame])
   fun ref unshift(value: Frame):          Message ref^ => _inner.unshift(value); this
   fun ref shift():                        Frame^?      => _inner.shift()
   fun ref truncate(len: USize):           Message ref^ => _inner.truncate(len); this
-  fun ref append(seq: ReadSeq[Frame],
-     offset: USize = 0, len: USize = -1): Message ref^ => _inner.append(seq, offset, len); this
+  fun ref concat(iter: Iterator[Frame^], offset: USize = 0, len: USize = -1):
+    Message ref^ => _inner.concat(iter, offset, len); this
+  fun ref append(seq: ReadSeq[Frame], offset: USize = 0, len: USize = -1):
+    Message ref^ => _inner.append(seq, offset, len); this
   
   fun nodes():   ListNodes[Frame, this->ListNode[Frame]]^  => _inner.nodes()
   fun rnodes():  ListNodes[Frame, this->ListNode[Frame]]^  => _inner.rnodes()
@@ -46,6 +48,5 @@ class val Message is (Stringable & Equatable[Message box] & Seq[Frame])
   
   fun inspect(): String => Inspect(this)
   
-  fun string(fmt: FormatDefault = FormatDefault,
-    prefix: PrefixDefault = PrefixDefault, prec: USize = -1, width: USize = 0,
-    align: Align = AlignLeft, fill: U32 = ' '): String iso^ => inspect().clone()
+  fun string(fmt: FormatSettings = FormatSettingsDefault): String iso^ =>
+    inspect().clone()

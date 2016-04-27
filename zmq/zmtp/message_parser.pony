@@ -2,13 +2,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface iso MessageWriteTransform
+interface ref MessageWriteTransform
   fun ref apply(message: Message): Array[U8] val
 
-class MessageParser
-  var _message: Message trn = recover Message end
-  
-  fun tag write(message: Message box): Array[U8] val =>
+class MessageWriter is MessageWriteTransform
+  fun ref apply(message: Message box): Array[U8] val =>
     let output = recover trn Array[U8] end
     let frame_count = message.size()
     
@@ -31,6 +29,9 @@ class MessageParser
     end
     
     output
+
+class MessageParser
+  var _message: Message trn = recover Message end
   
   fun ref read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): Message trn^? =>
     var has_more: Bool = true
@@ -44,7 +45,8 @@ class MessageParser
                  | 0x00 | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
                  | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                  else
-                   protocol_error("unknown frame ident byte: " + ident.string(FormatHex))
+                   let hex_fmt = FormatSettingsInt.set_format(FormatHex)
+                   protocol_error("unknown frame ident byte: " + ident.string(hex_fmt))
                    error
                  end
       

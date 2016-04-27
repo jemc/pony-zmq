@@ -6,7 +6,7 @@ class Z85Test is UnitTest
   new iso create() => None
   fun name(): String => "zmq.Z85"
   
-  fun apply(h: TestHelper): TestResult =>
+  fun apply(h: TestHelper) =>
     // Example from ZMQ RFC 32 for Z85.
     test_pair(h, "HelloWorld", recover [as U8:
       0x86, 0x4F, 0xD2, 0x6F, 0xB5, 0x59, 0xF7, 0x5B
@@ -61,23 +61,20 @@ class Z85Test is UnitTest
       0xB4, 0x9C, 0xD9, 0x06, 0x3A, 0xEA, 0xD3, 0xB7
     ] end)
   
-  fun test_pair(h: TestHelper, str: String, bin: Array[U8] val): TestResult =>
-    try h.expect_eq[String](Z85.encode(bin), str)
-    else h.assert_failed("expected to be able to Z85-encode to string: "+str)
+  fun test_pair(h: TestHelper, str: String, bin: Array[U8] val) =>
+    try h.assert_eq[String](Z85.encode(bin), str)
+    else h.fail("expected to be able to Z85-encode to string: "+str)
     end
-    try h.expect_eq[String](Z85.decode(str), recover String.append(bin) end)
-    else h.assert_failed("expected to be able to Z85-decode from string: "+str)
+    try h.assert_eq[String](Z85.decode(str), recover String.append(bin) end)
+    else h.fail("expected to be able to Z85-decode from string: "+str)
     end
-    true
   
-  fun test_decode_error(h: TestHelper, str: String): TestResult =>
+  fun test_decode_error(h: TestHelper, str: String) =>
     try Z85.decode(str)
-      h.assert_failed("expected NOT to be able to Z85-decode from string: "+str)
+      h.fail("expected NOT to be able to Z85-decode from string: "+str)
     end
-    true
   
-  fun test_encode_error(h: TestHelper, bin: Array[U8] val): TestResult =>
+  fun test_encode_error(h: TestHelper, bin: Array[U8] val) =>
     try Z85.encode(bin)
-      h.assert_failed("expected NOT to be able to Z85-encode the binary.")
+      h.fail("expected NOT to be able to Z85-encode the binary.")
     end
-    true

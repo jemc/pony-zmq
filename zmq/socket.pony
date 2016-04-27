@@ -16,8 +16,8 @@ interface tag _SocketPeer
 interface tag _SocketBind
   be dispose()
 
-interface iso SocketAccessLambda
-  fun iso apply(socket: Socket ref)
+interface val SocketAccessLambda
+  fun val apply(socket: Socket ref)
 
 actor Socket
   let _notify: SocketNotify ref

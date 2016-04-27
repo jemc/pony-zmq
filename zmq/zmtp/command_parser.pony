@@ -41,7 +41,8 @@ primitive CommandParser
                | 0x02 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                else
-                 protocol_error("unknown command ident byte: " + ident.string(FormatHex))
+                 let hex_fmt = FormatSettingsInt.set_format(FormatHex)
+                 protocol_error("unknown command ident byte: " + ident.string(hex_fmt))
                  error
                end
     

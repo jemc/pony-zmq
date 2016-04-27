@@ -62,13 +62,13 @@ actor _SocketReactor is zmq.SocketNotifiableActor
           (let peer, let message) = _messages.shift()
           (consume h)(peer, message)
         
-        | (let n: USize, let h: _MessageListLambdaPartial) =>
+        | (let n': USize, let h: _MessageListLambdaPartial) =>
+          var n = n'
           if _messages.size() < n then _handlers.unshift((n, consume h)); error end
           
           let list = List[zmq.Message]
-          var n' = n
-          while n' > 0 do
-            n' = n' - 1
+          while n > 0 do
+            n = n - 1
             (let peer, let message) = _messages.shift()
             list.push(message)
           end

@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-interface iso _MessageWriteTransform
+interface ref _MessageWriteTransform
   fun ref apply(message: Message): Array[U8] val
 
 interface SessionHandleActivated     fun ref apply(writex: _MessageWriteTransform) => None

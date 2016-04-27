@@ -1,5 +1,6 @@
 
 use "ponytest"
+use "net"
 use zmq = ".."
 
 primitive SocketTransportTests is TestList
@@ -43,7 +44,7 @@ class SocketTransportTest is UnitTest
   
   fun name(): String => "zmq.Socket (transport: " + _desc + ")"
   
-  fun apply(h: TestHelper): TestResult =>
+  fun apply(h: TestHelper) =>
     let ctx = zmq.Context
     let ra = _SocketReactor; let a = ctx.socket(zmq.PAIR, ra.notify())
     let rb = _SocketReactor; let b = ctx.socket(zmq.PAIR, rb.notify())
@@ -53,20 +54,20 @@ class SocketTransportTest is UnitTest
     a.send(recover zmq.Message.push("foo") end)
     b.send(recover zmq.Message.push("bar") end)
     
-    ra.next(lambda iso(m: zmq.Message)(h,a) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+    ra.next(recover lambda iso(m: zmq.Message)(h,a) =>
+      h.assert_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
       a.dispose()
-    end)
+    end end)
     
-    rb.next(lambda iso(m: zmq.Message)(h,b) =>
-      h.expect_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+    rb.next(recover lambda iso(m: zmq.Message)(h,b) =>
+      h.assert_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
       b.dispose()
-    end)
+    end end)
     
-    ra.when_closed(lambda iso()(h,rb) =>
-      rb.when_closed(lambda iso()(h) =>
+    ra.when_closed(recover lambda iso()(h,rb) =>
+      rb.when_closed(recover lambda iso()(h) =>
         h.complete(true)
-      end)
-    end)
+      end end)
+    end end)
     
-    LongTest
+    h.long_test(5_000_000_000)

@@ -57,7 +57,7 @@ class MechanismAuthNull is Mechanism
       error
     end
     
-    _session.activated(recover MessageParser~write() end)
+    _session.activated(recover MessageWriter end)
     _next_state(_MechanismAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref) ? =>
