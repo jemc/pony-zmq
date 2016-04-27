@@ -7,13 +7,13 @@ primitive SocketTransportTests is TestList
   fun tag tests(test: PonyTest) =>
     
     test(SocketTransportTest("TCP",
-      lambda val(a: zmq.Socket, b: zmq.Socket) =>
-        a.bind("tcp://localhost:8888")
-        b.connect("tcp://localhost:8888")
+      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
+        a(zmq.BindTCP(net_auth, "localhost", "8888"))
+        a(zmq.ConnectTCP(net_auth, "localhost", "8888"))
       end))
     
     test(SocketTransportTest("TCP + Curve",
-      lambda val(a: zmq.Socket, b: zmq.Socket) =>
+      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
         a.set(zmq.CurvePublicKey("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         a.set(zmq.CurveSecretKey("mjr{I->@v1rhtZ<zka05x/<RUS[3s{-eN.jtVgr&"))
         a.set(zmq.CurveAsServer(true))
@@ -22,18 +22,18 @@ primitive SocketTransportTests is TestList
         b.set(zmq.CurveSecretKey("!{(r5u+61V?(FMkLEQT{W)!{VQJhCLW>]*/Eyn]s"))
         b.set(zmq.CurvePublicKeyOfServer("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         
-        a.bind("tcp://localhost:8899")
-        b.connect("tcp://localhost:8899")
+        a(zmq.BindTCP(net_auth, "localhost", "8899"))
+        a(zmq.ConnectTCP(net_auth, "localhost", "8899"))
       end))
     
     test(SocketTransportTest("inproc",
-      lambda val(a: zmq.Socket, b: zmq.Socket) =>
-        a.bind("inproc://SocketTransportTest")
-        b.connect("inproc://SocketTransportTest")
+      lambda val(net_auth: NetAuth,a: zmq.Socket, b: zmq.Socket) =>
+        a(zmq.BindInProc("SocketTransportTest"))
+        b(zmq.ConnectInProc("SocketTransportTest"))
       end))
 
 interface val _SocketTransportTestsSetupLambda
-  fun val apply(a: zmq.Socket, b: zmq.Socket)
+  fun val apply(h: NetAuth,a: zmq.Socket, b: zmq.Socket)
 
 class SocketTransportTest is UnitTest
   let _desc: String
@@ -44,12 +44,14 @@ class SocketTransportTest is UnitTest
   
   fun name(): String => "zmq.Socket (transport: " + _desc + ")"
   
-  fun apply(h: TestHelper) =>
+  fun apply(h: TestHelper)? =>
     let ctx = zmq.Context
     let ra = _SocketReactor; let a = ctx.socket(zmq.PAIR, ra.notify())
     let rb = _SocketReactor; let b = ctx.socket(zmq.PAIR, rb.notify())
     
-    _setup(a, b)
+    let net_auth = NetAuth(h.env.root as AmbientAuth)
+    
+    _setup(net_auth, a, b)
     
     a.send(recover zmq.Message.push("foo") end)
     b.send(recover zmq.Message.push("bar") end)

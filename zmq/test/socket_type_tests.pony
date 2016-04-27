@@ -84,8 +84,8 @@ class SocketTypeTestPairPair is SocketTypeTest
     let ra = _SocketReactor; let a = ctx.socket(zmq.PAIR, ra.notify())
     let rb = _SocketReactor; let b = ctx.socket(zmq.PAIR, rb.notify())
     
-    a.bind("inproc://SocketTypeTestPairPair")
-    b.connect("inproc://SocketTypeTestPairPair")
+    a(zmq.BindInProc("SocketTypeTestPairPair"))
+    b(zmq.ConnectInProc("SocketTypeTestPairPair"))
     
     a.access(recover lambda val(a: zmq.Socket ref) =>
       a.send_now(recover zmq.Message.push("b1") end)
@@ -120,15 +120,14 @@ class SocketTypeTestPushNPull is SocketTypeTest
     let rb = _SocketReactor; let b = ctx.socket(zmq.PULL, rb.notify())
     let rc = _SocketReactor; let c = ctx.socket(zmq.PULL, rc.notify())
     
-    a.bind("inproc://SocketTypeTestPushNPull/a")
-    b.bind("inproc://SocketTypeTestPushNPull/b")
-    c.bind("inproc://SocketTypeTestPushNPull/c")
+    a(zmq.BindInProc("SocketTypeTestPushNPull/a"))
+    b(zmq.BindInProc("SocketTypeTestPushNPull/b"))
+    c(zmq.BindInProc("SocketTypeTestPushNPull/c"))
     
     s.access(recover lambda val(s: zmq.Socket ref) =>
-      s.connect_now("inproc://SocketTypeTestPushNPull/a")
-      s.connect_now("inproc://SocketTypeTestPushNPull/b")
-      s.connect_now("inproc://SocketTypeTestPushNPull/c")
-      
+      s.apply_now(zmq.ConnectInProc("inproc://SocketTypeTestPushNPull/a"))
+      s.apply_now(zmq.ConnectInProc("inproc://SocketTypeTestPushNPull/b"))
+      s.apply_now(zmq.ConnectInProc("inproc://SocketTypeTestPushNPull/c"))
       s.send_now(recover zmq.Message.push("a1") end)
       s.send_now(recover zmq.Message.push("b1") end)
       s.send_now(recover zmq.Message.push("c1") end)
@@ -165,12 +164,12 @@ class SocketTypeTestPullNPush is SocketTypeTest
     let rb = _SocketReactor; let b = ctx.socket(zmq.PUSH, rb.notify())
     let rc = _SocketReactor; let c = ctx.socket(zmq.PUSH, rc.notify())
     
-    a.bind("inproc://SocketTypeTestPullNPush/a")
-    b.bind("inproc://SocketTypeTestPullNPush/b")
-    c.bind("inproc://SocketTypeTestPullNPush/c")
-    s.connect("inproc://SocketTypeTestPullNPush/a")
-    s.connect("inproc://SocketTypeTestPullNPush/b")
-    s.connect("inproc://SocketTypeTestPullNPush/c")
+    a(zmq.BindInProc("SocketTypeTestPullNPush/a"))
+    b(zmq.BindInProc("SocketTypeTestPullNPush/b"))
+    c(zmq.BindInProc("SocketTypeTestPullNPush/c"))
+    s(zmq.ConnectInProc("SocketTypeTestPullNPush/a"))
+    s(zmq.ConnectInProc("SocketTypeTestPullNPush/b"))
+    s(zmq.ConnectInProc("SocketTypeTestPullNPush/c"))
     
     a.send(recover zmq.Message.push("a1") end)
     b.send(recover zmq.Message.push("b1") end)
@@ -207,15 +206,14 @@ class SocketTypeTestReqNRep is SocketTypeTest
     let rb = _SocketReactor; let b = ctx.socket(zmq.REP, rb.notify())
     let rc = _SocketReactor; let c = ctx.socket(zmq.REP, rc.notify())
     
-    a.bind("inproc://SocketTypeTestReqNRep/a")
-    b.bind("inproc://SocketTypeTestReqNRep/b")
-    c.bind("inproc://SocketTypeTestReqNRep/c")
+    a(zmq.BindInProc("SocketTypeTestReqNRep/a"))
+    b(zmq.BindInProc("SocketTypeTestReqNRep/b"))
+    c(zmq.BindInProc("SocketTypeTestReqNRep/c"))
     
     s.access(recover lambda val(s: zmq.Socket ref) =>
-      s.connect_now("inproc://SocketTypeTestReqNRep/a")
-      s.connect_now("inproc://SocketTypeTestReqNRep/b")
-      s.connect_now("inproc://SocketTypeTestReqNRep/c")
-      
+      s.apply_now(zmq.ConnectInProc("inproc://SocketTypeTestReqNRep/a"))
+      s.apply_now(zmq.ConnectInProc("inproc://SocketTypeTestReqNRep/b"))
+      s.apply_now(zmq.ConnectInProc("inproc://SocketTypeTestReqNRep/c"))
       s.send_now(recover zmq.Message.push("a") end)
       s.send_now(recover zmq.Message.push("b") end)
       s.send_now(recover zmq.Message.push("c") end)
@@ -252,12 +250,12 @@ class SocketTypeTestRepNReq is SocketTypeTest
     let rb = _SocketReactor; let b = ctx.socket(zmq.REQ, rb.notify())
     let rc = _SocketReactor; let c = ctx.socket(zmq.REQ, rc.notify())
     
-    a.bind("inproc://SocketTypeTestRepNReq/a")
-    b.bind("inproc://SocketTypeTestRepNReq/b")
-    c.bind("inproc://SocketTypeTestRepNReq/c")
-    s.connect("inproc://SocketTypeTestRepNReq/a")
-    s.connect("inproc://SocketTypeTestRepNReq/b")
-    s.connect("inproc://SocketTypeTestRepNReq/c")
+    a(zmq.BindInProc("SocketTypeTestRepNReq/a"))
+    b(zmq.BindInProc("SocketTypeTestRepNReq/b"))
+    c(zmq.BindInProc("SocketTypeTestRepNReq/c"))
+    s(zmq.ConnectInProc("SocketTypeTestRepNReq/a"))
+    s(zmq.ConnectInProc("SocketTypeTestRepNReq/b"))
+    s(zmq.ConnectInProc("SocketTypeTestRepNReq/c"))
     
     a.send(recover zmq.Message.push("a") end)
     b.send(recover zmq.Message.push("b") end)

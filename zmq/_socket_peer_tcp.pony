@@ -8,7 +8,7 @@ use "net"
 actor _SocketPeerTCP is (_SocketTCPNotifiable & _ZapResponseNotifiable)
   let _parent: Socket
   let _socket_opts: SocketOptions val
-  let _endpoint: EndpointTCP
+  let _endpoint: ConnectTCP
   var _inner: (_SocketTCPTarget | None) = None
   let _session: _SessionKeeper
   
@@ -19,11 +19,15 @@ actor _SocketPeerTCP is (_SocketTCPNotifiable & _ZapResponseNotifiable)
   
   var _reconnect_timer: (Timer tag | None) = None
   
-  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: EndpointTCP) =>
+  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: ConnectTCP) =>
     _parent = parent
     _socket_opts = socket_opts
     _endpoint = endpoint
-    _inner = TCPConnection(_SocketTCPNotify(this), _endpoint.host, _endpoint.port)
+    _inner = TCPConnection(
+      _endpoint._get_auth(),
+      _SocketTCPNotify(this),
+      _endpoint._get_host(),
+      _endpoint._get_port())
     _session = _SessionKeeper(socket_opts)
   
   be dispose() =>
@@ -46,7 +50,11 @@ actor _SocketPeerTCP is (_SocketTCPNotifiable & _ZapResponseNotifiable)
   
   be _reconnect_timer_fire() =>
     if not _active and not _disposed then
-      _inner = TCPConnection(_SocketTCPNotify(this), _endpoint.host, _endpoint.port)
+      _inner = TCPConnection(
+        _endpoint._get_auth(),
+        _SocketTCPNotify(this),
+        _endpoint._get_host(),
+        _endpoint._get_port())
     end
   
   ///

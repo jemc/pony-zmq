@@ -6,9 +6,12 @@ use "net"
 
 actor _SocketBindTCP
   var _inner: TCPListener
-  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: EndpointTCP) =>
-    _inner = TCPListener(_SocketBindTCPListenNotify(parent, socket_opts),
-                         endpoint.host, endpoint.port)
+  new create(parent: Socket, socket_opts: SocketOptions val, endpoint: BindTCP) =>
+    _inner = TCPListener(
+      endpoint._get_auth(),
+      _SocketBindTCPListenNotify(parent, socket_opts),
+      endpoint._get_host(),
+      endpoint._get_port())
   be dispose() =>
     _inner.dispose()
 

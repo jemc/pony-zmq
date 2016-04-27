@@ -22,8 +22,8 @@ interface val SocketAccessLambda
 actor Socket
   let _notify: SocketNotify ref
   
-  let _peers:      Map[String, _SocketPeer]              = _peers.create()
-  let _binds:      Map[String, _SocketBind]              = _binds.create()
+  let _peers:      Map[Connect, _SocketPeer]             = _peers.create()
+  let _binds:      Map[Bind,    _SocketBind]             = _binds.create()
   let _bind_peers: MapIs[_SocketBind, List[_SocketPeer]] = _bind_peers.create()
   
   let _timers:   Timers        = _timers.create()
@@ -75,24 +75,18 @@ actor Socket
     end
     clone
   
-  fun _make_peer(string: String): _SocketPeer? =>
-    match EndpointParser.from_uri(string)
-    | let e: EndpointTCP => _SocketPeerTCP(this, _socket_opts_clone(), e)
-    | let e: EndpointInProc => _SocketPeerInProc(this, _socket_opts_clone(), e)
-    | let e: EndpointUnknown => error
-    else
-      Inspect.out("failed to parse connect endpoint: "+string)
-      error
+  fun _make_peer(endpoint: Connect): _SocketPeer? =>
+    match endpoint
+    | let e: ConnectTCP => _SocketPeerTCP(this, _socket_opts_clone(), e)
+    | let e: ConnectInProc => _SocketPeerInProc(this, _socket_opts_clone(), e)
+    else error
     end
   
-  fun _make_bind(string: String): _SocketBind? =>
-    match EndpointParser.from_uri(string)
-    | let e: EndpointTCP => _SocketBindTCP(this, _socket_opts_clone(), e)
-    | let e: EndpointInProc => _SocketBindInProc(this, _socket_opts_clone(), e)
-    | let e: EndpointUnknown => error
-    else
-      Inspect.out("failed to parse bind endpoint: "+string)
-      error
+  fun _make_bind(endpoint: Bind): _SocketBind? =>
+    match endpoint
+    | let e: BindTCP => _SocketBindTCP(this, _socket_opts_clone(), e)
+    | let e: BindInProc => _SocketBindInProc(this, _socket_opts_clone(), e)
+    else error
     end
   
   be access(f: SocketAccessLambda) =>
@@ -102,18 +96,19 @@ actor Socket
   fun ref set_now(optval: SocketOptionWithValue) =>
     _SocketOptionsUtil.set_in(optval, _socket_opts)
   
-  be connect(string: String) => connect_now(string)
-  fun ref connect_now(string: String) =>
-    try _peers(string) else
-      let peer = try _make_peer(string) else return end
-      _peers(string) = peer
-      _new_peer(peer)
-    end
-  
-  be bind(string: String) => bind_now(string)
-  fun ref bind_now(string: String) =>
-    try _binds(string) else
-      _binds(string) = try _make_bind(string) else return end
+  be apply(action: (Bind | Connect)) => apply_now(action)
+  fun ref apply_now(action: (Bind | Connect)) =>
+    match action
+    | let e: Bind =>
+      if not _binds.contains(e) then
+        _binds(e) = try _make_bind(e) else return end
+      end
+    | let e: Connect =>
+      if not _peers.contains(e) then
+        let peer = try _make_peer(e) else return end
+        _peers(e) = peer
+        _new_peer(peer)
+      end
     end
   
   be send(message: Message) => send_now(message)
