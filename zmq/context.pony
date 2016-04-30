@@ -33,7 +33,7 @@ class _ContextInProcRouter
   
   fun ref _bind(string: String, bind: _SocketBindInProc) =>
     // If there is not already a bind for this string
-    try _ready_binds(string) else
+    if not _ready_binds.contains(string) then
       // Set this bind as the bind for this string
       _ready_binds(string) = bind
       
