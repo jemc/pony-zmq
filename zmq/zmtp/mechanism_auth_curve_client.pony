@@ -162,5 +162,5 @@ class MechanismAuthCurveClient is Mechanism
     let nonce_gen: _CurveNonceGenerator iso = _nonce_gen = _CurveNonceGenerator
     
     recover
-      _CurveMessageWriter(sk, pk, consume nonce_gen, "CurveZMQMESSAGES")
+      _CurveMessageWriter(sk, pk, consume nonce_gen, "CurveZMQMESSAGEC")
     end
