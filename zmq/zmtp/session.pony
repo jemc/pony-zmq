@@ -82,8 +82,8 @@ class Session
     CommandParser.read(buffer, protocol_error)
   
   fun ref _read_specific_command[A: Command ref](buffer: _Buffer ref): A? =>
-    let command = A.create()
     let c_data = _read_command(buffer)
+    let command = A.create()
     
     try command(c_data) else
       protocol_error("Expected "+command.name()+" command, got: "+c_data.name())
