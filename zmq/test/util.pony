@@ -2,39 +2,39 @@
 use "collections"
 use zmq = ".."
 
-interface iso _LambdaPartial
-  fun iso apply() => None
+interface val _Handler
+  fun val apply()
 
-interface iso _MessageLambdaPartial
-  fun iso apply(message: zmq.Message) => None
+interface val _MessageHandler
+  fun val apply(message: zmq.Message)
 
-interface iso _PeerMessageLambdaPartial
-  fun iso apply(peer: zmq.SocketPeer, message: zmq.Message) => None
+interface val _PeerMessageHandler
+  fun val apply(peer: zmq.SocketPeer, message: zmq.Message)
 
-interface iso _MessageListLambdaPartial
-  fun iso apply(message: List[zmq.Message]) => None
+interface val _MessageListHandler
+  fun val apply(message: List[zmq.Message])
 
 type _SocketReactorHandler is
-  ( _MessageLambdaPartial
-  | _PeerMessageLambdaPartial
-  | (USize, _MessageListLambdaPartial))
+  ( _MessageHandler
+  | _PeerMessageHandler
+  | (USize, _MessageListHandler))
 
 actor _SocketReactor is zmq.SocketNotifiableActor
   let _messages: List[(zmq.SocketPeer, zmq.Message)] = _messages.create()
   let _handlers: List[_SocketReactorHandler]         = _handlers.create()
   
-  var _closed_handler: (_LambdaPartial | None) = None
+  var _closed_handler: (_Handler | None) = None
   var _closed:             Bool = false
   var _ran_closed_handler: Bool = false
   
   fun tag notify(): zmq.SocketNotify^ =>
     zmq.SocketNotifyActor(this)
   
-  be next(handler: (_MessageLambdaPartial | _PeerMessageLambdaPartial)) =>
+  be next(handler: (_MessageHandler | _PeerMessageHandler)) =>
     _handlers.push(consume handler)
     maybe_run_handlers()
   
-  be next_n(n: USize, handler: _MessageListLambdaPartial) =>
+  be next_n(n: USize, handler: _MessageListHandler) =>
     _handlers.push((n, consume handler))
     maybe_run_handlers()
   
@@ -42,7 +42,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
     _messages.push((peer, message))
     maybe_run_handlers()
   
-  be when_closed(handler: _LambdaPartial) =>
+  be when_closed(handler: _Handler) =>
     _closed_handler = consume handler
     maybe_run_closed_handler()
   
@@ -54,15 +54,15 @@ actor _SocketReactor is zmq.SocketNotifiableActor
     try
       while (_handlers.size() > 0) and (_messages.size() > 0) do
         match _handlers.shift()
-        | let h: _MessageLambdaPartial =>
+        | let h: _MessageHandler =>
           (let peer, let message) = _messages.shift()
           (consume h)(message)
         
-        | let h: _PeerMessageLambdaPartial =>
+        | let h: _PeerMessageHandler =>
           (let peer, let message) = _messages.shift()
           (consume h)(peer, message)
         
-        | (let n': USize, let h: _MessageListLambdaPartial) =>
+        | (let n': USize, let h: _MessageListHandler) =>
           var n = n'
           if _messages.size() < n then _handlers.unshift((n, consume h)); error end
           
@@ -79,7 +79,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
   
   fun ref maybe_run_closed_handler() =>
     if _closed and not _ran_closed_handler then
-      match (_closed_handler = None) | let closed_handler: _LambdaPartial =>
+      match (_closed_handler = None) | let closed_handler: _Handler =>
         (consume closed_handler)()
         _ran_closed_handler = true
       end

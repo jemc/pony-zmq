@@ -9,7 +9,7 @@ primitive SocketTransportTests is TestList
     test(SocketTransportTest("TCP",
       lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
         a(zmq.BindTCP(net_auth, "localhost", "8888"))
-        a(zmq.ConnectTCP(net_auth, "localhost", "8888"))
+        b(zmq.ConnectTCP(net_auth, "localhost", "8888"))
       end))
     
     test(SocketTransportTest("TCP + Curve",
@@ -23,11 +23,11 @@ primitive SocketTransportTests is TestList
         b.set(zmq.CurvePublicKeyOfServer("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         
         a(zmq.BindTCP(net_auth, "localhost", "8899"))
-        a(zmq.ConnectTCP(net_auth, "localhost", "8899"))
+        b(zmq.ConnectTCP(net_auth, "localhost", "8899"))
       end))
     
-    test(SocketTransportTest("inproc",
-      lambda val(net_auth: NetAuth,a: zmq.Socket, b: zmq.Socket) =>
+    test(SocketTransportTest("InProc",
+      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
         a(zmq.BindInProc("SocketTransportTest"))
         b(zmq.ConnectInProc("SocketTransportTest"))
       end))
@@ -56,18 +56,18 @@ class SocketTransportTest is UnitTest
     a.send(recover zmq.Message.push("foo") end)
     b.send(recover zmq.Message.push("bar") end)
     
-    ra.next(recover lambda iso(m: zmq.Message)(h,a) =>
+    ra.next(recover lambda val(m: zmq.Message)(h,a) =>
       h.assert_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
       a.dispose()
     end end)
     
-    rb.next(recover lambda iso(m: zmq.Message)(h,b) =>
+    rb.next(recover lambda val(m: zmq.Message)(h,b) =>
       h.assert_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
       b.dispose()
     end end)
     
-    ra.when_closed(recover lambda iso()(h,rb) =>
-      rb.when_closed(recover lambda iso()(h) =>
+    ra.when_closed(recover lambda val()(h,rb) =>
+      rb.when_closed(recover lambda val()(h) =>
         h.complete(true)
       end end)
     end end)
