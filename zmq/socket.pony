@@ -20,7 +20,7 @@ interface val SocketAccessLambda
   fun val apply(socket: Socket ref)
 
 actor Socket
-  let _notify: SocketNotify ref
+  let _notify: SocketNotify
   
   let _peers:      Map[Connect, _SocketPeer]             = _peers.create()
   let _binds:      Map[Bind,    _SocketBind]             = _binds.create()
@@ -37,7 +37,7 @@ actor Socket
   let _observe_out: _ObserveOutgoing
   
   new create(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone) =>
-    _notify = consume notify
+    _notify = notify
     _handle_in = socket_type.handle_incoming()
     _handle_out = socket_type.handle_outgoing()
     _observe_in = socket_type.observe_incoming()
@@ -45,7 +45,7 @@ actor Socket
     _SocketOptionsUtil.set_in(_SocketTypeAsSocketOption(socket_type), _socket_opts)
   
   new _create_in(context: Context, socket_type: SocketType, notify: SocketNotify) =>
-    _notify = consume notify
+    _notify = notify
     _handle_in = socket_type.handle_incoming()
     _handle_out = socket_type.handle_outgoing()
     _observe_in = socket_type.observe_incoming()

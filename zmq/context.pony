@@ -8,7 +8,7 @@ actor Context
   let _inproc_router: _ContextInProcRouter = _ContextInProcRouter
   
   fun tag socket(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone): Socket =>
-    Socket._create_in(this, socket_type, consume notify)
+    Socket._create_in(this, socket_type, notify)
   
   be _zap_request(receiver: _ZapResponseNotifiable, zap: _ZapRequest) =>
     if _inproc_router._has_bind("zeromq.zap.01") then
@@ -57,11 +57,11 @@ class _ContextInProcRouter
     // Connect to a bind if there is one available
     try _ready_binds(string).accept_connection(peer) end
 
-class _ContextZapResponseNotify is SocketNotify
+class val _ContextZapResponseNotify is SocketNotify
   let _parent: _ZapResponseNotifiable
-  new iso create(parent: _ZapResponseNotifiable) => _parent = parent
+  new val create(parent: _ZapResponseNotifiable) => _parent = parent
   
-  fun ref received(s: Socket, p: SocketPeer, m: Message) =>
+  fun val received(s: Socket, p: SocketPeer, m: Message) =>
     _parent.notify_zap_response(try
       _ZapResponse.from_message(m)
     else
