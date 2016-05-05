@@ -7,7 +7,7 @@ interface ref _MessageWriteTransform
 
 interface SessionHandleActivated     fun ref apply(writex: _MessageWriteTransform) => None
 interface SessionHandleProtocolError fun ref apply(string: String)                 => None
-interface SessionHandleWrite         fun ref apply(bytes: ByteSeq)                   => None
+interface SessionHandleWrite         fun ref apply(bytes: ByteSeq)                 => None
 interface SessionHandleReceived      fun ref apply(message: Message)               => None
 interface SessionHandleZapRequest    fun ref apply(zap: ZapRequest)                => None
 
