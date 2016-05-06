@@ -35,7 +35,7 @@ class val BindTCP is Bind
   fun _get_host(): String       => _host
   fun _get_port(): String       => _port
   
-  fun hash(): U64 => _host.hash() + _port.hash()
+  fun hash(): U64 => _host.hash() xor _port.hash()
   fun eq(that': Bind): Bool =>
     match that' | let that: BindTCP =>
       (_host == that._host) and (_port == that._port)
