@@ -10,8 +10,7 @@ actor _SocketBindInProc
   =>
     _parent = parent
     _socket_opts = socket_opts
-    let context = _ContextAsSocketOption.find_in(socket_opts)
-    context._inproc_bind(endpoint._get_path(), this)
+    endpoint._get_ctx()._inproc_bind(endpoint._get_path(), this)
   
   be accept_connection(peer: _SocketPeerInProc) =>
     let peer' = _SocketPeerInProcBound(_parent, _socket_opts)

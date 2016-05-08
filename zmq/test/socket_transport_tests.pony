@@ -27,13 +27,19 @@ primitive SocketTransportTests is TestList
       end))
     
     test(SocketTransportTest("InProc",
-      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
-        a(zmq.BindInProc("SocketTransportTest"))
-        b(zmq.ConnectInProc("SocketTransportTest"))
+      lambda val(ctx: zmq.Context, a: zmq.Socket, b: zmq.Socket) =>
+        a(zmq.BindInProc(ctx, "SocketTransportTest"))
+        b(zmq.ConnectInProc(ctx, "SocketTransportTest"))
       end))
 
-interface val _SocketTransportTestsSetupLambda
-  fun val apply(h: NetAuth,a: zmq.Socket, b: zmq.Socket)
+interface val _SocketTransportTestsSetupNetLambda
+  fun val apply(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket)
+
+interface val _SocketTransportTestsSetupContextLambda
+  fun val apply(ctx: zmq.Context, a: zmq.Socket, b: zmq.Socket)
+
+type _SocketTransportTestsSetupLambda is
+  (_SocketTransportTestsSetupNetLambda | _SocketTransportTestsSetupContextLambda)
 
 class SocketTransportTest is UnitTest
   let _desc: String
@@ -45,13 +51,16 @@ class SocketTransportTest is UnitTest
   fun name(): String => "zmq.Socket (transport: " + _desc + ")"
   
   fun apply(h: TestHelper)? =>
-    let ctx = zmq.Context
-    let ra = _SocketReactor; let a = ctx.socket(zmq.PAIR, ra.notify())
-    let rb = _SocketReactor; let b = ctx.socket(zmq.PAIR, rb.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.PAIR, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.PAIR, rb.notify())
     
     let net_auth = NetAuth(h.env.root as AmbientAuth)
+    let ctx = zmq.Context
     
-    _setup(net_auth, a, b)
+    match _setup
+    | let setup: _SocketTransportTestsSetupNetLambda => setup(net_auth, a, b)
+    | let setup: _SocketTransportTestsSetupContextLambda => setup(ctx, a, b)
+    end
     
     a.send(recover zmq.Message.push("foo") end)
     b.send(recover zmq.Message.push("bar") end)

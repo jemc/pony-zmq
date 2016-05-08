@@ -71,9 +71,6 @@ primitive _SocketOptionsUtil
 ///
 // Internal-only socket options
 
-primitive _ContextAsSocketOption is SocketOption[Context]
-  fun tag default(): Context => Context
-
 primitive _SocketTypeAsSocketOption is SocketOption[SocketType]
   fun tag default(): SocketType => PAIR
 

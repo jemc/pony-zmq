@@ -44,15 +44,6 @@ actor Socket
     _observe_out = socket_type.observe_outgoing()
     _SocketOptionsUtil.set_in(_SocketTypeAsSocketOption(socket_type), _socket_opts)
   
-  new _create_in(context: Context, socket_type: SocketType, notify: SocketNotify) =>
-    _notify = notify
-    _handle_in = socket_type.handle_incoming()
-    _handle_out = socket_type.handle_outgoing()
-    _observe_in = socket_type.observe_incoming()
-    _observe_out = socket_type.observe_outgoing()
-    _SocketOptionsUtil.set_in(_ContextAsSocketOption(context), _socket_opts)
-    _SocketOptionsUtil.set_in(_SocketTypeAsSocketOption(socket_type), _socket_opts)
-  
   be dispose() =>
     _timers.dispose()
     for peer in _peers.values() do

@@ -8,17 +8,19 @@ use "net"
 trait val Bind is (Equatable[Bind] & Hashable)
 
 class val BindInProc is Bind
+  let _ctx: Context
   let _path: String
   
-  new val create(path': String) =>
-    _path = path'
+  new val create(ctx': Context, path': String) =>
+    _ctx = ctx'; _path = path'
   
+  fun _get_ctx(): Context => _ctx
   fun _get_path(): String => _path
   
-  fun hash(): U64 => _path.hash()
+  fun hash(): U64 => (identityof _ctx).hash() xor _path.hash()
   fun eq(that': Bind): Bool =>
     match that' | let that: BindInProc =>
-      _path == that._path
+      (_ctx is that._ctx) and (_path == that._path)
     else false
     end
 

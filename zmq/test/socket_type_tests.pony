@@ -80,12 +80,12 @@ class SocketTypeTestPairPair is SocketTypeTest
   fun name(): String => "zmq.Socket (type: 1-PAIR <-> 1-PAIR)"
   
   fun apply(h: TestHelper) =>
-    let ctx = zmq.Context
-    let ra = _SocketReactor; let a = ctx.socket(zmq.PAIR, ra.notify())
-    let rb = _SocketReactor; let b = ctx.socket(zmq.PAIR, rb.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.PAIR, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.PAIR, rb.notify())
     
-    a(zmq.BindInProc("SocketTypeTestPairPair"))
-    b(zmq.ConnectInProc("SocketTypeTestPairPair"))
+    let ctx = zmq.Context
+    a(zmq.BindInProc(ctx, "SocketTypeTestPairPair"))
+    b(zmq.ConnectInProc(ctx, "SocketTypeTestPairPair"))
     
     a.access(recover lambda val(a: zmq.Socket ref) =>
       a.send_now(recover zmq.Message.push("b1") end)
@@ -114,20 +114,20 @@ class SocketTypeTestPushNPull is SocketTypeTest
   fun name(): String => "zmq.Socket (type: 1-PUSH --> N-PULL)"
   
   fun apply(h: TestHelper) =>
-    let ctx = zmq.Context
-    let rs = _SocketReactor; let s = ctx.socket(zmq.PUSH, rs.notify())
-    let ra = _SocketReactor; let a = ctx.socket(zmq.PULL, ra.notify())
-    let rb = _SocketReactor; let b = ctx.socket(zmq.PULL, rb.notify())
-    let rc = _SocketReactor; let c = ctx.socket(zmq.PULL, rc.notify())
+    let rs = _SocketReactor; let s = zmq.Socket(zmq.PUSH, rs.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.PULL, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.PULL, rb.notify())
+    let rc = _SocketReactor; let c = zmq.Socket(zmq.PULL, rc.notify())
     
-    a(zmq.BindInProc("SocketTypeTestPushNPull/a"))
-    b(zmq.BindInProc("SocketTypeTestPushNPull/b"))
-    c(zmq.BindInProc("SocketTypeTestPushNPull/c"))
+    let ctx = zmq.Context
+    a(zmq.BindInProc(ctx, "SocketTypeTestPushNPull/a"))
+    b(zmq.BindInProc(ctx, "SocketTypeTestPushNPull/b"))
+    c(zmq.BindInProc(ctx, "SocketTypeTestPushNPull/c"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestPushNPull/a"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestPushNPull/b"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestPushNPull/c"))
     
     s.access(recover lambda val(s: zmq.Socket ref) =>
-      s.apply_now(zmq.ConnectInProc("SocketTypeTestPushNPull/a"))
-      s.apply_now(zmq.ConnectInProc("SocketTypeTestPushNPull/b"))
-      s.apply_now(zmq.ConnectInProc("SocketTypeTestPushNPull/c"))
       s.send_now(recover zmq.Message.push("a1") end)
       s.send_now(recover zmq.Message.push("b1") end)
       s.send_now(recover zmq.Message.push("c1") end)
@@ -158,18 +158,18 @@ class SocketTypeTestPullNPush is SocketTypeTest
   fun name(): String => "zmq.Socket (type: 1-PULL <-- N-PUSH)"
   
   fun apply(h: TestHelper) =>
-    let ctx = zmq.Context
-    let rs = _SocketReactor; let s = ctx.socket(zmq.PULL, rs.notify())
-    let ra = _SocketReactor; let a = ctx.socket(zmq.PUSH, ra.notify())
-    let rb = _SocketReactor; let b = ctx.socket(zmq.PUSH, rb.notify())
-    let rc = _SocketReactor; let c = ctx.socket(zmq.PUSH, rc.notify())
+    let rs = _SocketReactor; let s = zmq.Socket(zmq.PULL, rs.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.PUSH, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.PUSH, rb.notify())
+    let rc = _SocketReactor; let c = zmq.Socket(zmq.PUSH, rc.notify())
     
-    a(zmq.BindInProc("SocketTypeTestPullNPush/a"))
-    b(zmq.BindInProc("SocketTypeTestPullNPush/b"))
-    c(zmq.BindInProc("SocketTypeTestPullNPush/c"))
-    s(zmq.ConnectInProc("SocketTypeTestPullNPush/a"))
-    s(zmq.ConnectInProc("SocketTypeTestPullNPush/b"))
-    s(zmq.ConnectInProc("SocketTypeTestPullNPush/c"))
+    let ctx = zmq.Context
+    a(zmq.BindInProc(ctx, "SocketTypeTestPullNPush/a"))
+    b(zmq.BindInProc(ctx, "SocketTypeTestPullNPush/b"))
+    c(zmq.BindInProc(ctx, "SocketTypeTestPullNPush/c"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestPullNPush/a"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestPullNPush/b"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestPullNPush/c"))
     
     a.send(recover zmq.Message.push("a1") end)
     b.send(recover zmq.Message.push("b1") end)
@@ -200,20 +200,20 @@ class SocketTypeTestReqNRep is SocketTypeTest
   fun name(): String => "zmq.Socket (type: 1-REQ --> N-REP)"
   
   fun apply(h: TestHelper) =>
-    let ctx = zmq.Context
-    let rs = _SocketReactor; let s = ctx.socket(zmq.REQ, rs.notify())
-    let ra = _SocketReactor; let a = ctx.socket(zmq.REP, ra.notify())
-    let rb = _SocketReactor; let b = ctx.socket(zmq.REP, rb.notify())
-    let rc = _SocketReactor; let c = ctx.socket(zmq.REP, rc.notify())
+    let rs = _SocketReactor; let s = zmq.Socket(zmq.REQ, rs.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.REP, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.REP, rb.notify())
+    let rc = _SocketReactor; let c = zmq.Socket(zmq.REP, rc.notify())
     
-    a(zmq.BindInProc("SocketTypeTestReqNRep/a"))
-    b(zmq.BindInProc("SocketTypeTestReqNRep/b"))
-    c(zmq.BindInProc("SocketTypeTestReqNRep/c"))
+    let ctx = zmq.Context
+    a(zmq.BindInProc(ctx, "SocketTypeTestReqNRep/a"))
+    b(zmq.BindInProc(ctx, "SocketTypeTestReqNRep/b"))
+    c(zmq.BindInProc(ctx, "SocketTypeTestReqNRep/c"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestReqNRep/a"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestReqNRep/b"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestReqNRep/c"))
     
     s.access(recover lambda val(s: zmq.Socket ref) =>
-      s.apply_now(zmq.ConnectInProc("SocketTypeTestReqNRep/a"))
-      s.apply_now(zmq.ConnectInProc("SocketTypeTestReqNRep/b"))
-      s.apply_now(zmq.ConnectInProc("SocketTypeTestReqNRep/c"))
       s.send_now(recover zmq.Message.push("a") end)
       s.send_now(recover zmq.Message.push("b") end)
       s.send_now(recover zmq.Message.push("c") end)
@@ -244,18 +244,18 @@ class SocketTypeTestRepNReq is SocketTypeTest
   fun name(): String => "zmq.Socket (type: 1-REP <-- N-REQ)"
   
   fun apply(h: TestHelper) =>
-    let ctx = zmq.Context
-    let rs = _SocketReactor; let s = ctx.socket(zmq.REP, rs.notify())
-    let ra = _SocketReactor; let a = ctx.socket(zmq.REQ, ra.notify())
-    let rb = _SocketReactor; let b = ctx.socket(zmq.REQ, rb.notify())
-    let rc = _SocketReactor; let c = ctx.socket(zmq.REQ, rc.notify())
+    let rs = _SocketReactor; let s = zmq.Socket(zmq.REP, rs.notify())
+    let ra = _SocketReactor; let a = zmq.Socket(zmq.REQ, ra.notify())
+    let rb = _SocketReactor; let b = zmq.Socket(zmq.REQ, rb.notify())
+    let rc = _SocketReactor; let c = zmq.Socket(zmq.REQ, rc.notify())
     
-    a(zmq.BindInProc("SocketTypeTestRepNReq/a"))
-    b(zmq.BindInProc("SocketTypeTestRepNReq/b"))
-    c(zmq.BindInProc("SocketTypeTestRepNReq/c"))
-    s(zmq.ConnectInProc("SocketTypeTestRepNReq/a"))
-    s(zmq.ConnectInProc("SocketTypeTestRepNReq/b"))
-    s(zmq.ConnectInProc("SocketTypeTestRepNReq/c"))
+    let ctx = zmq.Context
+    a(zmq.BindInProc(ctx, "SocketTypeTestRepNReq/a"))
+    b(zmq.BindInProc(ctx, "SocketTypeTestRepNReq/b"))
+    c(zmq.BindInProc(ctx, "SocketTypeTestRepNReq/c"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestRepNReq/a"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestRepNReq/b"))
+    s(zmq.ConnectInProc(ctx, "SocketTypeTestRepNReq/c"))
     
     a.send(recover zmq.Message.push("a") end)
     b.send(recover zmq.Message.push("b") end)

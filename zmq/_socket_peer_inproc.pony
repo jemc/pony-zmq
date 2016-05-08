@@ -14,8 +14,7 @@ actor _SocketPeerInProc
   new create(parent: Socket, socket_opts: SocketOptions val, endpoint: ConnectInProc) =>
     _parent = parent
     _socket_opts = socket_opts
-    let context = _ContextAsSocketOption.find_in(socket_opts)
-    context._inproc_connect(endpoint._get_path(), this)
+    endpoint._get_ctx()._inproc_connect(endpoint._get_path(), this)
   
   be dispose() =>
     _active = false

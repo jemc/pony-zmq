@@ -97,5 +97,5 @@ actor _SocketPeerTCPBound is (_SocketTCPNotifiable & _ZapResponseNotifiable)
     _parent._received(this, message)
   
   fun ref _handle_zap_request(zap: _ZapRequest) =>
-    let ctx = _ContextAsSocketOption.find_in(_socket_opts)
-    ctx._zap_request(this, zap)
+    // TODO: Support external ZAP handler as socket option.
+    notify_zap_response(_ZapResponse) // always just respond with 200 OK

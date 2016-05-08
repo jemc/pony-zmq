@@ -7,17 +7,6 @@ use "collections"
 actor Context
   let _inproc_router: _ContextInProcRouter = _ContextInProcRouter
   
-  fun tag socket(socket_type: SocketType, notify: SocketNotify = SocketNotifyNone): Socket =>
-    Socket._create_in(this, socket_type, notify)
-  
-  be _zap_request(receiver: _ZapResponseNotifiable, zap: _ZapRequest) =>
-    if _inproc_router._has_bind("zeromq.zap.01") then
-      let s = Socket._create_in(this, REQ, _ContextZapResponseNotify(receiver))
-      s.send(zap.as_message())
-    else // no ZAP handler is bound, just return 200 OK
-      receiver.notify_zap_response(_ZapResponse)
-    end
-  
   be _inproc_bind(string: String, bind: _SocketBindInProc) =>
     _inproc_router._bind(string, bind)
   
@@ -56,14 +45,3 @@ class _ContextInProcRouter
     
     // Connect to a bind if there is one available
     try _ready_binds(string).accept_connection(peer) end
-
-class val _ContextZapResponseNotify is SocketNotify
-  let _parent: _ZapResponseNotifiable
-  new val create(parent: _ZapResponseNotifiable) => _parent = parent
-  
-  fun val received(s: Socket, p: SocketPeer, m: Message) =>
-    _parent.notify_zap_response(try
-      _ZapResponse.from_message(m)
-    else
-      _ZapResponse.server_error("Incorrectly formatted ZAP response message")
-    end)
