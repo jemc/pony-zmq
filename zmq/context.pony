@@ -5,22 +5,10 @@
 use "collections"
 
 actor Context
-  let _inproc_router: _ContextInProcRouter = _ContextInProcRouter
-  
-  be _inproc_bind(string: String, bind: _SocketBindInProc) =>
-    _inproc_router._bind(string, bind)
-  
-  be _inproc_connect(string: String, peer: _SocketPeerInProc) =>
-    _inproc_router._connect(string, peer)
-
-class _ContextInProcRouter
   let _ready_binds: Map[String, _SocketBindInProc]       = _ready_binds.create()
   let _ready_peers: Map[String, List[_SocketPeerInProc]] = _ready_peers.create()
   
-  fun _has_bind(string: String): Bool =>
-    try _ready_binds(string); true else false end
-  
-  fun ref _bind(string: String, bind: _SocketBindInProc) =>
+  be _inproc_bind(string: String, bind: _SocketBindInProc) =>
     // If there is not already a bind for this string
     if not _ready_binds.contains(string) then
       // Set this bind as the bind for this string
@@ -34,7 +22,7 @@ class _ContextInProcRouter
       end
     end
   
-  fun ref _connect(string: String, peer: _SocketPeerInProc) =>
+  be _inproc_connect(string: String, peer: _SocketPeerInProc) =>
     // Add this peer to peer list for this string
     let peer_list = try _ready_peers(string) else
                       let list = List[_SocketPeerInProc]
