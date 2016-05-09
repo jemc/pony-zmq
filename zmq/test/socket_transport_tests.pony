@@ -2,9 +2,16 @@
 use "ponytest"
 use "net"
 use zmq = ".."
+use zmtp = "../zmtp"
 
 primitive SocketTransportTests is TestList
   fun tag tests(test: PonyTest) =>
+    
+    test(SocketTransportTest("InProc",
+      lambda val(ctx: zmq.Context, a: zmq.Socket, b: zmq.Socket) =>
+        a(zmq.BindInProc(ctx, "SocketTransportTest"))
+        b(zmq.ConnectInProc(ctx, "SocketTransportTest"))
+      end))
     
     test(SocketTransportTest("TCP",
       lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
@@ -22,14 +29,30 @@ primitive SocketTransportTests is TestList
         b.set(zmq.CurveSecretKey("!{(r5u+61V?(FMkLEQT{W)!{VQJhCLW>]*/Eyn]s"))
         b.set(zmq.CurvePublicKeyOfServer("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         
-        a(zmq.BindTCP(net_auth, "localhost", "8899"))
-        b(zmq.ConnectTCP(net_auth, "localhost", "8899"))
+        a(zmq.BindTCP(net_auth, "localhost", "8889"))
+        b(zmq.ConnectTCP(net_auth, "localhost", "8889"))
       end))
     
-    test(SocketTransportTest("InProc",
-      lambda val(ctx: zmq.Context, a: zmq.Socket, b: zmq.Socket) =>
-        a(zmq.BindInProc(ctx, "SocketTransportTest"))
-        b(zmq.ConnectInProc(ctx, "SocketTransportTest"))
+    test(SocketTransportTest("TCP + Curve + Zap",
+      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
+        let zap_handler =
+          object is zmtp.ZapRequestNotifiable
+            be handle_zap_request(req: zmtp.ZapRequest, respond: zmtp.ZapRespond) =>
+              // TODO: check public key (field of req)
+              respond(zmtp.ZapResponse.success("bob"))
+          end
+        
+        a.set(zmq.CurvePublicKey("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
+        a.set(zmq.CurveSecretKey("mjr{I->@v1rhtZ<zka05x/<RUS[3s{-eN.jtVgr&"))
+        a.set(zmq.CurveAsServer(true))
+        a.set(zmq.ZapHandler(zap_handler))
+        
+        b.set(zmq.CurvePublicKey("C.aR>9^Q5BZN7MLI50<IJ*[p)?Ahn^.]p/pfSnw8"))
+        b.set(zmq.CurveSecretKey("!{(r5u+61V?(FMkLEQT{W)!{VQJhCLW>]*/Eyn]s"))
+        b.set(zmq.CurvePublicKeyOfServer("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
+        
+        a(zmq.BindTCP(net_auth, "localhost", "8890"))
+        b(zmq.ConnectTCP(net_auth, "localhost", "8890"))
       end))
 
 interface val _SocketTransportTestsSetupNetLambda

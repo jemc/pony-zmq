@@ -26,7 +26,7 @@ class _SocketBindTCPListenNotify is TCPListenNotify
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
     _SocketTCPNotify(_SocketPeerTCPBound(_parent, _socket_opts))
 
-actor _SocketPeerTCPBound is (_SocketTCPNotifiable & _ZapResponseNotifiable)
+actor _SocketPeerTCPBound is _SocketTCPNotifiable
   let _parent: Socket
   let _socket_opts: SocketOptions val
   var _inner: (_SocketTCPTarget | None) = None
@@ -71,7 +71,7 @@ actor _SocketPeerTCPBound is (_SocketTCPNotifiable & _ZapResponseNotifiable)
     dispose()
   
   ///
-  // _ZapResponseNotifiable interface behaviors
+  // Zap support helper behaviours
   
   be notify_zap_response(zap: _ZapResponse) =>
     _session.handle_zap_response(zap)
@@ -97,5 +97,11 @@ actor _SocketPeerTCPBound is (_SocketTCPNotifiable & _ZapResponseNotifiable)
     _parent._received(this, message)
   
   fun ref _handle_zap_request(zap: _ZapRequest) =>
-    // TODO: Support external ZAP handler as socket option.
-    notify_zap_response(_ZapResponse) // always just respond with 200 OK
+    let respond: _ZapRespond = recover
+      lambda val(res: _ZapResponse)(t = this) => t.notify_zap_response(res) end
+    end
+    
+    let handler = ZapHandler.find_in(_socket_opts)
+    try (handler as _ZapRequestNotifiable).handle_zap_request(zap, respond)
+    else notify_zap_response(_ZapResponse) // no handler, so respond with 200 OK
+    end

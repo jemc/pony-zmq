@@ -303,3 +303,14 @@ primitive XPubWelcomeMessage is SocketOption[(String | None)]
   NOT YET DOCUMENTED.
   """
   fun tag default(): (String | None) => None
+
+primitive ZapHandler is SocketOption[(_ZapRequestNotifiable | None)]
+  """
+  An actor that is responsible for all remote sockets that try to handshake.
+  Each handshake will cause a handle_zap_request message to be sent to the
+  given ZAP handler actor, which is responsible for sending a response that
+  indicates whether the associated remote is allowed to complete the handshake.
+  NOT YET IMPLEMENTED (fully).
+  Currently only implemented for CURVE sockets with CurveAsServer(true).
+  """
+  fun tag default(): (_ZapRequestNotifiable | None) => None

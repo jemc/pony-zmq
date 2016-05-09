@@ -7,4 +7,5 @@ use zmtp = "zmtp"
 type _ZapRequest is zmtp.ZapRequest
 type _ZapResponse is zmtp.ZapResponse
 
-type _ZapResponseNotifiable is zmtp.ZapResponseNotifiable
+type _ZapRequestNotifiable is zmtp.ZapRequestNotifiable
+type _ZapRespond is zmtp.ZapRespond
