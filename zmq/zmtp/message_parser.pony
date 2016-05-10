@@ -33,7 +33,7 @@ class MessageWriter is MessageWriteTransform
 class MessageParser
   var _message: Message trn = recover Message end
   
-  fun ref read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): Message trn^? =>
+  fun ref read(buffer: _Buffer, notify: SessionNotify): Message trn^? =>
     var has_more: Bool = true
     
     while has_more do
@@ -46,7 +46,7 @@ class MessageParser
                  | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                  else
                    let hex_fmt = FormatSettingsInt.set_format(FormatHex)
-                   protocol_error("unknown frame ident byte: " + ident.string(hex_fmt))
+                   notify.protocol_error("unknown frame ident byte: " + ident.string(hex_fmt))
                    error
                  end
       

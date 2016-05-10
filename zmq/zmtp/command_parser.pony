@@ -25,7 +25,7 @@ primitive CommandParser
     
     output
   
-  fun read(buffer: _Buffer, protocol_error: SessionHandleProtocolError): CommandUnknown? =>
+  fun read(buffer: _Buffer, notify: SessionNotify): CommandUnknown? =>
     var offset: USize = 0
     
     // Peek ident byte to determine number of size bytes, then peek size.
@@ -42,7 +42,7 @@ primitive CommandParser
                | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                else
                  let hex_fmt = FormatSettingsInt.set_format(FormatHex)
-                 protocol_error("unknown command ident byte: " + ident.string(hex_fmt))
+                 notify.protocol_error("unknown command ident byte: " + ident.string(hex_fmt))
                  error
                end
     

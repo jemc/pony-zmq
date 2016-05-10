@@ -57,7 +57,7 @@ class MechanismAuthCurveServer is Mechanism
       if zap.is_success() then
         try _write_ready() end // TODO: handle zap.metadata
       else
-        _session.protocol_error("ZAP authentication failure") // TODO: more details
+        _session.notify.protocol_error("ZAP authentication failure") // TODO: more details
       end
     end
   
@@ -73,7 +73,7 @@ class MechanismAuthCurveServer is Mechanism
     let command = _session._read_specific_command[CommandAuthCurveHello](buffer)
     
     if not ((command.version_major == 1) and (command.version_minor == 0)) then
-      _session.protocol_error("unknown CurveZMQ version: " +
+      _session.notify.protocol_error("unknown CurveZMQ version: " +
                               command.version_major.string() + "." +
                               command.version_minor.string())
       error
@@ -82,7 +82,7 @@ class MechanismAuthCurveServer is Mechanism
     _ct_pk = command.ct_pk
     let nonce = CryptoBoxNonce("CurveZMQHELLO---" + command.short_nonce)
     let data = try CryptoBox.open(command.signature_box, nonce, _s_sk, _ct_pk) else
-                 _session.protocol_error("couldn't open HELLO box")
+                 _session.notify.protocol_error("couldn't open HELLO box")
                  error
                end
     
@@ -103,7 +103,7 @@ class MechanismAuthCurveServer is Mechanism
     let nonce = CryptoBoxNonce("WELCOME-" + long_nonce)
     command.long_nonce = long_nonce
     command.data_box = try CryptoBox(welcome_box.string(), nonce, _s_sk, _ct_pk) else
-                         _session.protocol_error("couldn't encode WELCOME box")
+                         _session.notify.protocol_error("couldn't encode WELCOME box")
                          error
                        end
     _session._write_command(command)
@@ -114,12 +114,12 @@ class MechanismAuthCurveServer is Mechanism
     let cookie = try CryptoSecretBox.open(command.cookie.substring(16),
                        CryptoSecretBoxNonce("COOKIE--" + command.cookie.substring(0, 16)),
                          _cookie_key) else
-                   _session.protocol_error("couldn't open INITIATE cookie box")
+                   _session.notify.protocol_error("couldn't open INITIATE cookie box")
                    error
                  end
     if (cookie.substring(0, 32) != _ct_pk.string())
     or (cookie.substring(32, 64) != _st_sk.string()) then
-      _session.protocol_error("got incorrect INITIATE cookie")
+      _session.notify.protocol_error("got incorrect INITIATE cookie")
       error
     end
     _cookie_key = CryptoSecretBoxKey("") // forget cookie key
@@ -127,7 +127,7 @@ class MechanismAuthCurveServer is Mechanism
     // TODO: verify incrementing short nonces
     let nonce = CryptoBoxNonce("CurveZMQINITIATE" + command.short_nonce)
     let data = try CryptoBox.open(command.data_box, nonce, _st_sk, _ct_pk) else
-                 _session.protocol_error("couldn't open INITIATE box")
+                 _session.notify.protocol_error("couldn't open INITIATE box")
                  error
                end
     let initate_box = CommandAuthCurveInitiateBox(data)
@@ -135,21 +135,21 @@ class MechanismAuthCurveServer is Mechanism
     let other_type = try initate_box.metadata("Socket-Type") else "" end
     if not _session.keeper.socket_type_accepts(other_type) then
       let this_type = _session.keeper.socket_type_string()
-      _session.protocol_error(this_type+" socket cannot accept: "+other_type)
+      _session.notify.protocol_error(this_type+" socket cannot accept: "+other_type)
       error
     end
     
     _c_pk = initate_box.c_pk
     let vouch_nonce = CryptoBoxNonce("VOUCH---" + initate_box.long_nonce)
     let vouch = try CryptoBox.open(initate_box.vouch_box, vouch_nonce, _st_sk, _c_pk) else
-                  _session.protocol_error("couldn't open INITIATE vouch box")
+                  _session.notify.protocol_error("couldn't open INITIATE vouch box")
                   error
                 end
     let vouch_box = CommandAuthCurveInitiateVouchBox(vouch)
     
     if (vouch_box.ct_pk.string() != _ct_pk.string())
     or (vouch_box.s_pk.string() != _s_pk.string()) then
-      _session.protocol_error("contents of INITIATE vouch box are incorrect")
+      _session.notify.protocol_error("contents of INITIATE vouch box are incorrect")
       error
     end
     
@@ -159,7 +159,7 @@ class MechanismAuthCurveServer is Mechanism
     // TODO: zap.identity = 
     zap.mechanism = "CURVE"
     zap.push_credential(_c_pk.string())
-    _session.zap_request(consume zap)
+    _session.notify.zap_request(consume zap)
     
     _next_state(_MechanismAuthCurveServerStateAwaitZapResponse)
     error // Don't read any more buffer input until ZapResponse returns
@@ -173,12 +173,12 @@ class MechanismAuthCurveServer is Mechanism
     let nonce = CryptoBoxNonce("CurveZMQREADY---" + short_nonce)
     command.short_nonce = short_nonce
     command.data_box = try CryptoBox(ready_box.string(), nonce, _st_sk, _ct_pk) else
-                         _session.protocol_error("couldn't encode READY box")
+                         _session.notify.protocol_error("couldn't encode READY box")
                          error
                        end
     _session._write_command(command)
     
-    _session.activated(_make_message_writex())
+    _session.notify.activated(_make_message_writex())
     _next_state(_MechanismAuthCurveServerStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref)? =>
@@ -186,14 +186,14 @@ class MechanismAuthCurveServer is Mechanism
     // TODO: validate that client's short nonces increment as per spec.
     let nonce = CryptoBoxNonce("CurveZMQMESSAGEC" + command.short_nonce)
     let data = try CryptoBox.open(command.data_box, nonce, _st_sk, _ct_pk) else
-                 _session.protocol_error("couldn't open MESSAGE box")
+                 _session.notify.protocol_error("couldn't open MESSAGE box")
                  error
                end
     let message_box = CommandAuthCurveMessageBox(data)
     _session._add_to_message(message_box.payload)
     
     if not message_box.has_more then
-      _session.received(_session._take_message())
+      _session.notify.received(_session._take_message())
     end
   
   fun ref _make_message_writex(): MessageWriteTransform iso^ =>

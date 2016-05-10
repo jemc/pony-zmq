@@ -16,23 +16,9 @@ class _SessionKeeper
   new create(socket_opts: SocketOptions val) =>
     _socket_opts = socket_opts
   
-  fun ref start(
-    handle_activated:      zmtp.SessionHandleActivated,
-    handle_protocol_error: zmtp.SessionHandleProtocolError,
-    handle_write:          zmtp.SessionHandleWrite,
-    handle_received:       zmtp.SessionHandleReceived,
-    handle_zap_request:    zmtp.SessionHandleZapRequest
-  ) =>
+  fun ref start(notify': zmtp.SessionNotify) =>
     _buffer.clear()
-    _session.start(where
-      session_keeper = this,
-      mechanism = _make_mechanism(),
-      handle_activated      = handle_activated,
-      handle_protocol_error = handle_protocol_error,
-      handle_write          = handle_write,
-      handle_received       = handle_received,
-      handle_zap_request    = handle_zap_request
-    )
+    _session.start(this, notify', _make_mechanism())
   
   fun _make_curve_key(key: String): String? =>
     match key.size()

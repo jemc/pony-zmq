@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use "net"
+use zmtp = "zmtp"
 
 actor _SocketBindTCP
   var _inner: TCPListener
@@ -26,7 +27,7 @@ class _SocketBindTCPListenNotify is TCPListenNotify
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
     _SocketTCPNotify(_SocketPeerTCPBound(_parent, _socket_opts))
 
-actor _SocketPeerTCPBound is _SocketTCPNotifiable
+actor _SocketPeerTCPBound is (_SocketTCPNotifiable & zmtp.SessionNotify)
   let _parent: Socket
   let _socket_opts: SocketOptions val
   var _inner: (_SocketTCPTarget | None) = None
@@ -53,13 +54,8 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
   // _SocketTCPNotifiable interface behaviors
   
   be notify_start(target: _SocketTCPTarget) =>
-    _session.start(where
-      handle_activated      = this~_handle_activated(target),
-      handle_protocol_error = this~_handle_protocol_error(),
-      handle_write          = this~_handle_write(target),
-      handle_received       = this~_handle_received(),
-      handle_zap_request    = this~_handle_zap_request()
-    )
+    _inner = target
+    _session.start(this)
   
   be notify_input(data: Array[U8] iso) =>
     _session.handle_input(consume data)
@@ -79,24 +75,23 @@ actor _SocketPeerTCPBound is _SocketTCPNotifiable
   ///
   // Session handler methods
   
-  fun ref _handle_activated(target: _SocketTCPTarget, writex: _MessageWriteTransform) =>
-    _inner = target
+  fun ref activated(writex: _MessageWriteTransform) =>
     _active = true
     _parent._connected(this)
     _messages.set_write_transform(consume writex)
-    _messages.flush(target)
+    try _messages.flush(_inner as _SocketTCPTarget) end
   
-  fun ref _handle_protocol_error(string: String) =>
+  fun ref protocol_error(string: String) =>
     dispose()
     _parent._protocol_error(this, string)
   
-  fun ref _handle_write(target: _SocketTCPTarget, bytes: ByteSeq) =>
-    target.write(bytes)
+  fun ref write(bytes: ByteSeq) =>
+    try (_inner as _SocketTCPTarget).write(bytes) end
   
-  fun ref _handle_received(message: Message) =>
+  fun ref received(message: Message) =>
     _parent._received(this, message)
   
-  fun ref _handle_zap_request(zap: _ZapRequest) =>
+  fun ref zap_request(zap: _ZapRequest) =>
     let respond: _ZapRespond = recover
       lambda val(res: _ZapResponse)(t = this) => t.notify_zap_response(res) end
     end

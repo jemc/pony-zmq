@@ -53,13 +53,13 @@ class MechanismAuthNull is Mechanism
     let other_type = try command.metadata("Socket-Type") else "" end
     if not _session.keeper.socket_type_accepts(other_type) then
       let this_type = _session.keeper.socket_type_string()
-      _session.protocol_error(this_type+" socket cannot accept: "+other_type)
+      _session.notify.protocol_error(this_type+" socket cannot accept: "+other_type)
       error
     end
     
-    _session.activated(recover MessageWriter end)
+    _session.notify.activated(recover MessageWriter end)
     _next_state(_MechanismAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref) ? =>
-    _session.received(_session._read_message(buffer))
+    _session.notify.received(_session._read_message(buffer))
     _next_state(_MechanismAuthNullStateReadMessage)

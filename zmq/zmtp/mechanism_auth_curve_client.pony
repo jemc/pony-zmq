@@ -73,7 +73,7 @@ class MechanismAuthCurveClient is Mechanism
     command.ct_pk         = _ct_pk
     command.short_nonce   = short_nonce
     command.signature_box = try CryptoBox(signature, nonce, _ct_sk, _s_pk) else
-                              _session.protocol_error("couldn't encode HELLO box")
+                              _session.notify.protocol_error("couldn't encode HELLO box")
                               error
                             end
     _session._write_command(command)
@@ -83,7 +83,7 @@ class MechanismAuthCurveClient is Mechanism
     let command = _session._read_specific_command[CommandAuthCurveWelcome](buffer)
     let nonce = CryptoBoxNonce("WELCOME-" + command.long_nonce)
     let data = try CryptoBox.open(command.data_box, nonce, _ct_sk, _s_pk) else
-                 _session.protocol_error("couldn't open WELCOME box")
+                 _session.notify.protocol_error("couldn't open WELCOME box")
                  error
                end
     let welcome_box = CommandAuthCurveWelcomeBox(data)
@@ -102,7 +102,7 @@ class MechanismAuthCurveClient is Mechanism
     initiate_box.c_pk = _c_pk
     initiate_box.long_nonce = vouch_long_nonce
     initiate_box.vouch_box = try CryptoBox(vouch_box.string(), vouch_nonce, _c_sk, _st_pk) else
-                               _session.protocol_error("couldn't encode INITIATE vouch box")
+                               _session.notify.protocol_error("couldn't encode INITIATE vouch box")
                                error
                              end
     initiate_box.metadata("Socket-Type") = _session.keeper.socket_type_string()
@@ -113,7 +113,7 @@ class MechanismAuthCurveClient is Mechanism
     command.cookie = cookie
     command.short_nonce = short_nonce
     command.data_box = try CryptoBox(initiate_box.string(), nonce, _ct_sk, _st_pk) else
-                         _session.protocol_error("couldn't encode INITIATE box")
+                         _session.notify.protocol_error("couldn't encode INITIATE box")
                          error
                        end
     _session._write_command(command)
@@ -124,7 +124,7 @@ class MechanismAuthCurveClient is Mechanism
     // TODO: validate that server's short nonces increment as per spec.
     let nonce = CryptoBoxNonce("CurveZMQREADY---" + command.short_nonce)
     let data = try CryptoBox.open(command.data_box, nonce, _ct_sk, _st_pk) else
-                 _session.protocol_error("couldn't open READY box")
+                 _session.notify.protocol_error("couldn't open READY box")
                  error
                end
     let welcome_box = CommandAuthCurveReadyBox(data)
@@ -132,11 +132,11 @@ class MechanismAuthCurveClient is Mechanism
     let other_type = try welcome_box.metadata("Socket-Type") else "" end
     if not _session.keeper.socket_type_accepts(other_type) then
       let this_type = _session.keeper.socket_type_string()
-      _session.protocol_error(this_type+" socket cannot accept: "+other_type)
+      _session.notify.protocol_error(this_type+" socket cannot accept: "+other_type)
       error
     end
     
-    _session.activated(_make_message_writex())
+    _session.notify.activated(_make_message_writex())
     _next_state(_MechanismAuthCurveClientStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref)? =>
@@ -145,14 +145,14 @@ class MechanismAuthCurveClient is Mechanism
     // TODO: validate that server's short nonces increment as per spec.
     let nonce = CryptoBoxNonce("CurveZMQMESSAGES" + command.short_nonce)
     let data = try CryptoBox.open(command.data_box, nonce, _ct_sk, _st_pk) else
-                 _session.protocol_error("couldn't open MESSAGE box")
+                 _session.notify.protocol_error("couldn't open MESSAGE box")
                  error
                end
     let message_box = CommandAuthCurveMessageBox(data)
     _session._add_to_message(message_box.payload)
     
     if not message_box.has_more then
-      _session.received(_session._take_message())
+      _session.notify.received(_session._take_message())
     end
   
   fun ref _make_message_writex(): MessageWriteTransform iso^ =>
