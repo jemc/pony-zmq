@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use net = "net"
+use buffered = "buffered"
 use z85 = "z85"
 use zmtp = "zmtp"
 use "sodium"
@@ -11,7 +11,7 @@ class _SessionKeeper
   let _socket_opts: SocketOptions val
   
   let _session: zmtp.Session = zmtp.Session
-  let _buffer: net.Buffer = net.Buffer
+  let _buffer: buffered.Reader = buffered.Reader
   
   new create(socket_opts: SocketOptions val) =>
     _socket_opts = socket_opts

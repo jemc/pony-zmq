@@ -1,6 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+use "format"
 
 interface ref MessageWriteTransform
   fun ref apply(message: Message): Array[U8] val
@@ -45,8 +46,7 @@ class MessageParser
                  | 0x00 | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
                  | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
                  else
-                   let hex_fmt = FormatSettingsInt.set_format(FormatHex)
-                   notify.protocol_error("unknown frame ident byte: " + ident.string(hex_fmt))
+                   notify.protocol_error("unknown frame ident byte: " + Format.int[U8](ident, FormatHex))
                    error
                  end
       

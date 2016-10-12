@@ -2,6 +2,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use net = "net"
+use buffered = "buffered"
 
-type _Buffer is net.Buffer
+type _Buffer is buffered.Reader

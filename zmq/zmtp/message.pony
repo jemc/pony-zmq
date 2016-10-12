@@ -48,5 +48,5 @@ class val Message is (Stringable & Equatable[Message box] & Seq[Frame])
   
   fun inspect(): String => Inspect(this)
   
-  fun string(fmt: FormatSettings = FormatSettingsDefault): String iso^ =>
+  fun string(): String iso^ =>
     inspect().clone()
