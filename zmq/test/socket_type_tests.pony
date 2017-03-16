@@ -26,7 +26,7 @@ trait SocketTypeTest is UnitTest
     s.dispose()
   
   fun tag recv_unordered_set(h: TestHelper, rs: _SocketReactor, s: zmq.Socket, expected_list: Array[zmq.Message] val) =>
-    rs.next_n(expected_list.size(), recover lambda val(list: List[zmq.Message])(h,s,expected_list) =>
+    rs.next_n(expected_list.size(), {(list: List[zmq.Message])(h,s,expected_list) =>
       if list.size() != expected_list.size() then
         h.fail("Expected " + expected_list.size().string() + " messages, " + 
                         "but got " + list.size().string())
@@ -46,32 +46,32 @@ trait SocketTypeTest is UnitTest
       end
       
       s.dispose()
-    end end)
+    } val)
   
   fun tag wait_1_reactor(h: TestHelper, ra: _SocketReactor) =>
-    ra.when_closed(recover lambda val()(h) =>
+    ra.when_closed({()(h) =>
       h.complete(true)
-    end end)
+    } val)
     
     h.long_test(5_000_000_000)
   
   fun tag wait_2_reactors(h: TestHelper, ra: _SocketReactor, rb: _SocketReactor) =>
-    ra.when_closed(recover lambda val()(h, rb) =>
-      rb.when_closed(recover lambda val()(h) =>
+    ra.when_closed({()(h, rb) =>
+      rb.when_closed({()(h) =>
         h.complete(true)
-      end end)
-    end end)
+      } val)
+    } val)
     
     h.long_test(5_000_000_000)
   
   fun tag wait_3_reactors(h: TestHelper, ra: _SocketReactor, rb: _SocketReactor, rc: _SocketReactor) =>
-    ra.when_closed(recover lambda val()(h, rb, rc) =>
-      rb.when_closed(recover lambda val()(h, rc) =>
-        rc.when_closed(recover lambda val()(h) =>
+    ra.when_closed({()(h, rb, rc) =>
+      rb.when_closed({()(h, rc) =>
+        rc.when_closed({()(h) =>
           h.complete(true)
-        end end)
-      end end)
-    end end)
+        } val)
+      } val)
+    } val)
     
     h.long_test(5_000_000_000)
 
@@ -87,25 +87,25 @@ class SocketTypeTestPairPair is SocketTypeTest
     a(zmq.BindInProc(ctx, "SocketTypeTestPairPair"))
     b(zmq.ConnectInProc(ctx, "SocketTypeTestPairPair"))
     
-    a.access(recover lambda val(a: zmq.Socket ref) =>
-      a.send_now(recover zmq.Message.push("b1") end)
-      a.send_now(recover zmq.Message.push("b2") end)
-      a.send_now(recover zmq.Message.push("b3") end)
-    end end)
+    a.access({(a: zmq.Socket ref) =>
+      a.send_now(recover zmq.Message.>push("b1") end)
+      a.send_now(recover zmq.Message.>push("b2") end)
+      a.send_now(recover zmq.Message.>push("b3") end)
+    } val)
     
-    b.access(recover lambda val(b: zmq.Socket ref) =>
-      b.send_now(recover zmq.Message.push("a1") end)
-      b.send_now(recover zmq.Message.push("a2") end)
-      b.send_now(recover zmq.Message.push("a3") end)
-    end end)
+    b.access({(b: zmq.Socket ref) =>
+      b.send_now(recover zmq.Message.>push("a1") end)
+      b.send_now(recover zmq.Message.>push("a2") end)
+      b.send_now(recover zmq.Message.>push("a3") end)
+    } val)
     
-    recv(h,      ra, a, recover zmq.Message.push("a1") end)
-    recv(h,      ra, a, recover zmq.Message.push("a2") end)
-    recv_last(h, ra, a, recover zmq.Message.push("a3") end)
+    recv(h,      ra, a, recover zmq.Message.>push("a1") end)
+    recv(h,      ra, a, recover zmq.Message.>push("a2") end)
+    recv_last(h, ra, a, recover zmq.Message.>push("a3") end)
     
-    recv(h,      rb, b, recover zmq.Message.push("b1") end)
-    recv(h,      rb, b, recover zmq.Message.push("b2") end)
-    recv_last(h, rb, b, recover zmq.Message.push("b3") end)
+    recv(h,      rb, b, recover zmq.Message.>push("b1") end)
+    recv(h,      rb, b, recover zmq.Message.>push("b2") end)
+    recv_last(h, rb, b, recover zmq.Message.>push("b3") end)
     
     wait_2_reactors(h, ra, rb)
 
@@ -127,29 +127,29 @@ class SocketTypeTestPushNPull is SocketTypeTest
     s(zmq.ConnectInProc(ctx, "SocketTypeTestPushNPull/b"))
     s(zmq.ConnectInProc(ctx, "SocketTypeTestPushNPull/c"))
     
-    s.access(recover lambda val(s: zmq.Socket ref) =>
-      s.send_now(recover zmq.Message.push("a1") end)
-      s.send_now(recover zmq.Message.push("b1") end)
-      s.send_now(recover zmq.Message.push("c1") end)
-      s.send_now(recover zmq.Message.push("a2") end)
-      s.send_now(recover zmq.Message.push("b2") end)
-      s.send_now(recover zmq.Message.push("c2") end)
-      s.send_now(recover zmq.Message.push("a3") end)
-      s.send_now(recover zmq.Message.push("b3") end)
-      s.send_now(recover zmq.Message.push("c3") end)
-    end end)
+    s.access({(s: zmq.Socket ref) =>
+      s.send_now(recover zmq.Message.>push("a1") end)
+      s.send_now(recover zmq.Message.>push("b1") end)
+      s.send_now(recover zmq.Message.>push("c1") end)
+      s.send_now(recover zmq.Message.>push("a2") end)
+      s.send_now(recover zmq.Message.>push("b2") end)
+      s.send_now(recover zmq.Message.>push("c2") end)
+      s.send_now(recover zmq.Message.>push("a3") end)
+      s.send_now(recover zmq.Message.>push("b3") end)
+      s.send_now(recover zmq.Message.>push("c3") end)
+    } val)
     
-    recv(h,      ra, a, recover zmq.Message.push("a1") end)
-    recv(h,      ra, a, recover zmq.Message.push("a2") end)
-    recv_last(h, ra, a, recover zmq.Message.push("a3") end)
+    recv(h,      ra, a, recover zmq.Message.>push("a1") end)
+    recv(h,      ra, a, recover zmq.Message.>push("a2") end)
+    recv_last(h, ra, a, recover zmq.Message.>push("a3") end)
     
-    recv(h,      rb, b, recover zmq.Message.push("b1") end)
-    recv(h,      rb, b, recover zmq.Message.push("b2") end)
-    recv_last(h, rb, b, recover zmq.Message.push("b3") end)
+    recv(h,      rb, b, recover zmq.Message.>push("b1") end)
+    recv(h,      rb, b, recover zmq.Message.>push("b2") end)
+    recv_last(h, rb, b, recover zmq.Message.>push("b3") end)
     
-    recv(h,      rc, c, recover zmq.Message.push("c1") end)
-    recv(h,      rc, c, recover zmq.Message.push("c2") end)
-    recv_last(h, rc, c, recover zmq.Message.push("c3") end)
+    recv(h,      rc, c, recover zmq.Message.>push("c1") end)
+    recv(h,      rc, c, recover zmq.Message.>push("c2") end)
+    recv_last(h, rc, c, recover zmq.Message.>push("c3") end)
     
     wait_3_reactors(h, ra, rb, rc)
 
@@ -171,26 +171,26 @@ class SocketTypeTestPullNPush is SocketTypeTest
     s(zmq.ConnectInProc(ctx, "SocketTypeTestPullNPush/b"))
     s(zmq.ConnectInProc(ctx, "SocketTypeTestPullNPush/c"))
     
-    a.send(recover zmq.Message.push("a1") end)
-    b.send(recover zmq.Message.push("b1") end)
-    c.send(recover zmq.Message.push("c1") end)
-    a.send(recover zmq.Message.push("a2") end)
-    b.send(recover zmq.Message.push("b2") end)
-    c.send(recover zmq.Message.push("c2") end)
-    a.send(recover zmq.Message.push("a3") end)
-    b.send(recover zmq.Message.push("b3") end)
-    c.send(recover zmq.Message.push("c3") end)
+    a.send(recover zmq.Message.>push("a1") end)
+    b.send(recover zmq.Message.>push("b1") end)
+    c.send(recover zmq.Message.>push("c1") end)
+    a.send(recover zmq.Message.>push("a2") end)
+    b.send(recover zmq.Message.>push("b2") end)
+    c.send(recover zmq.Message.>push("c2") end)
+    a.send(recover zmq.Message.>push("a3") end)
+    b.send(recover zmq.Message.>push("b3") end)
+    c.send(recover zmq.Message.>push("c3") end)
     
     recv_unordered_set(h, rs, s, recover [
-      recover val zmq.Message.push("a1") end,
-      recover val zmq.Message.push("b1") end,
-      recover val zmq.Message.push("c1") end,
-      recover val zmq.Message.push("a2") end,
-      recover val zmq.Message.push("b2") end,
-      recover val zmq.Message.push("c2") end,
-      recover val zmq.Message.push("a3") end,
-      recover val zmq.Message.push("b3") end,
-      recover val zmq.Message.push("c3") end
+      recover val zmq.Message.>push("a1") end,
+      recover val zmq.Message.>push("b1") end,
+      recover val zmq.Message.>push("c1") end,
+      recover val zmq.Message.>push("a2") end,
+      recover val zmq.Message.>push("b2") end,
+      recover val zmq.Message.>push("c2") end,
+      recover val zmq.Message.>push("a3") end,
+      recover val zmq.Message.>push("b3") end,
+      recover val zmq.Message.>push("c3") end
     ] end)
     
     wait_1_reactor(h, rs)
@@ -213,28 +213,28 @@ class SocketTypeTestReqNRep is SocketTypeTest
     s(zmq.ConnectInProc(ctx, "SocketTypeTestReqNRep/b"))
     s(zmq.ConnectInProc(ctx, "SocketTypeTestReqNRep/c"))
     
-    s.access(recover lambda val(s: zmq.Socket ref) =>
-      s.send_now(recover zmq.Message.push("a") end)
-      s.send_now(recover zmq.Message.push("b") end)
-      s.send_now(recover zmq.Message.push("c") end)
-    end end)
+    s.access({(s: zmq.Socket ref) =>
+      s.send_now(recover zmq.Message.>push("a") end)
+      s.send_now(recover zmq.Message.>push("b") end)
+      s.send_now(recover zmq.Message.>push("c") end)
+    } val)
     
-    ra.next(recover lambda val(p: zmq.SocketPeer, m: zmq.Message)(ra) =>
-      p.send(recover zmq.Message.append(m).push("A") end)
-    end end)
+    ra.next({(p: zmq.SocketPeer, m: zmq.Message)(ra) =>
+      p.send(recover zmq.Message.>append(m).>push("A") end)
+    } val)
     
-    rb.next(recover lambda val(p: zmq.SocketPeer, m: zmq.Message)(rb) =>
-      p.send(recover zmq.Message.append(m).push("B") end)
-    end end)
+    rb.next({(p: zmq.SocketPeer, m: zmq.Message)(rb) =>
+      p.send(recover zmq.Message.>append(m).>push("B") end)
+    } val)
     
-    rc.next(recover lambda val(p: zmq.SocketPeer, m: zmq.Message)(rc) =>
-      p.send(recover zmq.Message.append(m).push("C") end)
-    end end)
+    rc.next({(p: zmq.SocketPeer, m: zmq.Message)(rc) =>
+      p.send(recover zmq.Message.>append(m).>push("C") end)
+    } val)
     
     recv_unordered_set(h, rs, s, recover [
-      recover val zmq.Message.push("a").push("A") end,
-      recover val zmq.Message.push("b").push("B") end,
-      recover val zmq.Message.push("c").push("C") end
+      recover val zmq.Message.>push("a").>push("A") end,
+      recover val zmq.Message.>push("b").>push("B") end,
+      recover val zmq.Message.>push("c").>push("C") end
     ] end)
     
     wait_1_reactor(h, rs)
@@ -257,18 +257,18 @@ class SocketTypeTestRepNReq is SocketTypeTest
     s(zmq.ConnectInProc(ctx, "SocketTypeTestRepNReq/b"))
     s(zmq.ConnectInProc(ctx, "SocketTypeTestRepNReq/c"))
     
-    a.send(recover zmq.Message.push("a") end)
-    b.send(recover zmq.Message.push("b") end)
-    c.send(recover zmq.Message.push("c") end)
+    a.send(recover zmq.Message.>push("a") end)
+    b.send(recover zmq.Message.>push("b") end)
+    c.send(recover zmq.Message.>push("c") end)
     
     for i in Range(0, 3) do
-      rs.next(recover lambda val(p: zmq.SocketPeer, m: zmq.Message)(rs) =>
-        p.send(recover zmq.Message.append(m).push("S") end)
-      end end)
+      rs.next({(p: zmq.SocketPeer, m: zmq.Message)(rs) =>
+        p.send(recover zmq.Message.>append(m).>push("S") end)
+      } val)
     end
     
-    recv_last(h, ra, a, recover zmq.Message.push("a").push("S") end)
-    recv_last(h, rb, b, recover zmq.Message.push("b").push("S") end)
-    recv_last(h, rc, c, recover zmq.Message.push("c").push("S") end)
+    recv_last(h, ra, a, recover zmq.Message.>push("a").>push("S") end)
+    recv_last(h, rb, b, recover zmq.Message.>push("b").>push("S") end)
+    recv_last(h, rc, c, recover zmq.Message.>push("c").>push("S") end)
     
     wait_3_reactors(h, ra, rb, rc)

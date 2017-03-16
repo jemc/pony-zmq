@@ -14,18 +14,18 @@ class val Message is (Stringable & Equatable[Message box] & Seq[Frame])
   fun size():              USize  => _inner.size()
   fun apply(i: USize = 0): Frame? => _inner.apply(i)
   
-  fun ref reserve(len: USize):            Message ref^ => _inner.reserve(len); this
-  fun ref clear():                        Message ref^ => _inner.clear(); this
-  fun ref update(i: USize, value: Frame): Frame^?      => _inner.update(i, value)
-  fun ref push(value: Frame):             Message ref^ => _inner.push(value); this
-  fun ref pop():                          Frame^?      => _inner.pop()
-  fun ref unshift(value: Frame):          Message ref^ => _inner.unshift(value); this
-  fun ref shift():                        Frame^?      => _inner.shift()
-  fun ref truncate(len: USize):           Message ref^ => _inner.truncate(len); this
-  fun ref concat(iter: Iterator[Frame^], offset: USize = 0, len: USize = -1):
-    Message ref^ => _inner.concat(iter, offset, len); this
-  fun ref append(seq: ReadSeq[Frame], offset: USize = 0, len: USize = -1):
-    Message ref^ => _inner.append(seq, offset, len); this
+  fun ref reserve(len: USize)                     => _inner.reserve(len); this
+  fun ref clear()                                 => _inner.clear(); this
+  fun ref update(i: USize, value: Frame): Frame^? => _inner.update(i, value)
+  fun ref push(value: Frame)                      => _inner.push(value); this
+  fun ref pop():                          Frame^? => _inner.pop()
+  fun ref unshift(value: Frame)                   => _inner.unshift(value); this
+  fun ref shift():                        Frame^? => _inner.shift()
+  fun ref truncate(len: USize)                    => _inner.truncate(len); this
+  fun ref concat(iter: Iterator[Frame^], offset: USize = 0, len: USize = -1) =>
+    _inner.concat(iter, offset, len); this
+  fun ref append(seq: ReadSeq[Frame], offset: USize = 0, len: USize = -1) =>
+    _inner.append(seq, offset, len); this
   
   fun nodes():   ListNodes[Frame, this->ListNode[Frame]]^  => _inner.nodes()
   fun rnodes():  ListNodes[Frame, this->ListNode[Frame]]^  => _inner.rnodes()

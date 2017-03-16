@@ -8,19 +8,19 @@ primitive SocketTransportTests is TestList
   fun tag tests(test: PonyTest) =>
     
     test(SocketTransportTest("InProc",
-      lambda val(ctx: zmq.Context, a: zmq.Socket, b: zmq.Socket) =>
+      {(ctx: zmq.Context, a: zmq.Socket, b: zmq.Socket) =>
         a(zmq.BindInProc(ctx, "SocketTransportTest"))
         b(zmq.ConnectInProc(ctx, "SocketTransportTest"))
-      end))
+      } val))
     
     test(SocketTransportTest("TCP",
-      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
+      {(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
         a(zmq.BindTCP(net_auth, "localhost", "8888"))
         b(zmq.ConnectTCP(net_auth, "localhost", "8888"))
-      end))
+      } val))
     
     test(SocketTransportTest("TCP + Curve",
-      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
+      {(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
         a.set(zmq.CurvePublicKey("b8loV^tt{Wvs9Fx!xTI3[e/x1n.ud0]>9Tj*BGPt"))
         a.set(zmq.CurveSecretKey("mjr{I->@v1rhtZ<zka05x/<RUS[3s{-eN.jtVgr&"))
         a.set(zmq.CurveAsServer(true))
@@ -31,10 +31,10 @@ primitive SocketTransportTests is TestList
         
         a(zmq.BindTCP(net_auth, "localhost", "8889"))
         b(zmq.ConnectTCP(net_auth, "localhost", "8889"))
-      end))
+      } val))
     
     test(SocketTransportTest("TCP + Curve + Zap",
-      lambda val(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
+      {(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket) =>
         let zap_handler =
           object is zmtp.ZapRequestNotifiable
             be handle_zap_request(req: zmtp.ZapRequest, respond: zmtp.ZapRespond) =>
@@ -53,7 +53,7 @@ primitive SocketTransportTests is TestList
         
         a(zmq.BindTCP(net_auth, "localhost", "8890"))
         b(zmq.ConnectTCP(net_auth, "localhost", "8890"))
-      end))
+      } val))
 
 interface val _SocketTransportTestsSetupNetLambda
   fun val apply(net_auth: NetAuth, a: zmq.Socket, b: zmq.Socket)
@@ -85,23 +85,23 @@ class SocketTransportTest is UnitTest
     | let setup: _SocketTransportTestsSetupContextLambda => setup(ctx, a, b)
     end
     
-    a.send(recover zmq.Message.push("foo") end)
-    b.send(recover zmq.Message.push("bar") end)
+    a.send(recover zmq.Message.>push("foo") end)
+    b.send(recover zmq.Message.>push("bar") end)
     
-    ra.next(recover lambda val(m: zmq.Message)(h,a) =>
-      h.assert_eq[zmq.Message](m, recover zmq.Message.push("bar") end)
+    ra.next({(m: zmq.Message) =>
+      h.assert_eq[zmq.Message](m, recover zmq.Message.>push("bar") end)
       a.dispose()
-    end end)
+    } val)
     
-    rb.next(recover lambda val(m: zmq.Message)(h,b) =>
-      h.assert_eq[zmq.Message](m, recover zmq.Message.push("foo") end)
+    rb.next({(m: zmq.Message) =>
+      h.assert_eq[zmq.Message](m, recover zmq.Message.>push("foo") end)
       b.dispose()
-    end end)
+    } val)
     
-    ra.when_closed(recover lambda val()(h,rb) =>
-      rb.when_closed(recover lambda val()(h) =>
+    ra.when_closed({()(h,rb) =>
+      rb.when_closed({()(h) =>
         h.complete(true)
-      end end)
-    end end)
+      } val)
+    } val)
     
     h.long_test(5_000_000_000)

@@ -22,10 +22,10 @@ class CommandUtil
   
   fun tag write_string_as_metadata(metadata: CommandMetadata box): String =>
     let bytes = write_bytes_as_metadata(metadata)
-    recover val String.append(bytes) end
+    recover val String.>append(bytes) end
   
   fun tag read_bytes_as_metadata(metadata: CommandMetadata, bytes: Array[U8] val) =>
-    let buffer = _Buffer.append(bytes)
+    let buffer = _Buffer.>append(bytes)
     if metadata.size() > 0 then metadata.clear() end
     
     while buffer.size() > 0 do

@@ -44,7 +44,7 @@ primitive Greeting
     buffer.skip(1) // version-minor
     
     let other_mechanism = String
-    other_mechanism.append(buffer.block(20)).strip(String.push(0))
+    other_mechanism.>append(buffer.block(20)).>strip(String.>push(0))
     if mechanism != other_mechanism then
       notify.protocol_error("other mechanism: " + mechanism)
       error

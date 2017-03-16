@@ -65,7 +65,7 @@ class Z85Test is UnitTest
     try h.assert_eq[String](Z85.encode(bin), str)
     else h.fail("expected to be able to Z85-encode to string: "+str)
     end
-    try h.assert_eq[String](Z85.decode(str), recover String.append(bin) end)
+    try h.assert_eq[String](Z85.decode(str), recover String.>append(bin) end)
     else h.fail("expected to be able to Z85-decode from string: "+str)
     end
   

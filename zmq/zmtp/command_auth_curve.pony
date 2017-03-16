@@ -31,14 +31,14 @@ class CommandAuthCurveHello is Command
   fun ref apply(orig: CommandUnknown)? =>
     if orig.name() != name() then error end
     let orig_bytes = orig.bytes()
-    let buffer = recover iso _Buffer.append(orig_bytes) end
+    let buffer = recover iso _Buffer.>append(orig_bytes) end
     
     version_major = buffer.u8()
     version_minor = buffer.u8()
     buffer.skip(72) // anti-amplification padding
-    ct_pk = CryptoBoxPublicKey(recover String.append(buffer.block(32)) end)
-    short_nonce = recover String.append(buffer.block(8)) end
-    signature_box = recover String.append(buffer.block(80)) end
+    ct_pk = CryptoBoxPublicKey(recover String.>append(buffer.block(32)) end)
+    short_nonce = recover String.>append(buffer.block(8)) end
+    signature_box = recover String.>append(buffer.block(80)) end
 
 class CommandAuthCurveWelcome is Command
   var long_nonce: String = ""
@@ -56,10 +56,10 @@ class CommandAuthCurveWelcome is Command
   fun ref apply(orig: CommandUnknown)? =>
     if orig.name() != name() then error end
     let orig_bytes = orig.bytes()
-    let buffer = recover iso _Buffer.append(orig_bytes) end
+    let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    long_nonce = recover String.append(buffer.block(16)) end
-    data_box = recover String.append(buffer.block(144)) end
+    long_nonce = recover String.>append(buffer.block(16)) end
+    data_box = recover String.>append(buffer.block(144)) end
 
 class CommandAuthCurveInitiate is Command
   var cookie: String = ""
@@ -79,11 +79,11 @@ class CommandAuthCurveInitiate is Command
   fun ref apply(orig: CommandUnknown)? =>
     if orig.name() != name() then error end
     let orig_bytes = orig.bytes()
-    let buffer = recover iso _Buffer.append(orig_bytes) end
+    let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    cookie = recover String.append(buffer.block(96)) end
-    short_nonce = recover String.append(buffer.block(8)) end
-    data_box = recover String.append(buffer.block(buffer.size())) end
+    cookie = recover String.>append(buffer.block(96)) end
+    short_nonce = recover String.>append(buffer.block(8)) end
+    data_box = recover String.>append(buffer.block(buffer.size())) end
 
 class CommandAuthCurveReady is Command
   var short_nonce: String = ""
@@ -101,10 +101,10 @@ class CommandAuthCurveReady is Command
   fun ref apply(orig: CommandUnknown)? =>
     if orig.name() != name() then error end
     let orig_bytes = orig.bytes()
-    let buffer = recover iso _Buffer.append(orig_bytes) end
+    let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    short_nonce = recover String.append(buffer.block(8)) end
-    data_box = recover String.append(buffer.block(buffer.size())) end
+    short_nonce = recover String.>append(buffer.block(8)) end
+    data_box = recover String.>append(buffer.block(buffer.size())) end
 
 class CommandAuthCurveError is Command
   var reason: String = ""
@@ -120,7 +120,7 @@ class CommandAuthCurveError is Command
   fun ref apply(orig: CommandUnknown)? =>
     if orig.name() != name() then error end
     let orig_bytes = orig.bytes()
-    reason = recover String.append(orig_bytes) end
+    reason = recover String.>append(orig_bytes) end
 
 class CommandAuthCurveMessage is Command
   var short_nonce: String = ""
@@ -138,10 +138,10 @@ class CommandAuthCurveMessage is Command
   fun ref apply(orig: CommandUnknown)? =>
     if orig.name() != name() then error end
     let orig_bytes = orig.bytes()
-    let buffer = recover iso _Buffer.append(orig_bytes) end
+    let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    short_nonce = recover String.append(buffer.block(8)) end
-    data_box = recover String.append(buffer.block(buffer.size())) end
+    short_nonce = recover String.>append(buffer.block(8)) end
+    data_box = recover String.>append(buffer.block(buffer.size())) end
 
 ///
 // Encrypted boxes inside of Commands

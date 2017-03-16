@@ -103,9 +103,9 @@ actor _SocketPeerTCP is (_SocketTCPNotifiable & zmtp.SessionNotify)
     _parent._received(this, message)
   
   fun ref zap_request(zap: _ZapRequest) =>
-    let respond: _ZapRespond = recover
-      lambda val(res: _ZapResponse)(t = this) => t.notify_zap_response(res) end
-    end
+    let t: _SocketPeerTCP = this
+    let respond: _ZapRespond =
+      {(res: _ZapResponse) => t.notify_zap_response(res) } val
     
     let handler = ZapHandler.find_in(_socket_opts)
     try (handler as _ZapRequestNotifiable).handle_zap_request(zap, respond)
