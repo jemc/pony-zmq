@@ -19,10 +19,10 @@ class CommandAuthCurveHello is Command
     let output = recover trn Array[U8] end
     output.push(version_major)
     output.push(version_minor)
-    output.append(recover [as U8: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] end)
+    output.append(recover [as U8: 0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+                                  0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+                                  0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+                                  0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0] end)
     output.append(ct_pk.string())
     output.append(short_nonce)
     output.append(signature_box)

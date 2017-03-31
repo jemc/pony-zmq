@@ -182,14 +182,14 @@ class SocketTypeTestPullNPush is SocketTypeTest
     c.send(recover zmq.Message.>push("c3") end)
     
     recv_unordered_set(h, rs, s, recover [
-      recover val zmq.Message.>push("a1") end,
-      recover val zmq.Message.>push("b1") end,
-      recover val zmq.Message.>push("c1") end,
-      recover val zmq.Message.>push("a2") end,
-      recover val zmq.Message.>push("b2") end,
-      recover val zmq.Message.>push("c2") end,
-      recover val zmq.Message.>push("a3") end,
-      recover val zmq.Message.>push("b3") end,
+      recover val zmq.Message.>push("a1") end
+      recover val zmq.Message.>push("b1") end
+      recover val zmq.Message.>push("c1") end
+      recover val zmq.Message.>push("a2") end
+      recover val zmq.Message.>push("b2") end
+      recover val zmq.Message.>push("c2") end
+      recover val zmq.Message.>push("a3") end
+      recover val zmq.Message.>push("b3") end
       recover val zmq.Message.>push("c3") end
     ] end)
     
@@ -232,8 +232,8 @@ class SocketTypeTestReqNRep is SocketTypeTest
     } val)
     
     recv_unordered_set(h, rs, s, recover [
-      recover val zmq.Message.>push("a").>push("A") end,
-      recover val zmq.Message.>push("b").>push("B") end,
+      recover val zmq.Message.>push("a").>push("A") end
+      recover val zmq.Message.>push("b").>push("B") end
       recover val zmq.Message.>push("c").>push("C") end
     ] end)
     
