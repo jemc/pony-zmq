@@ -32,6 +32,8 @@ class _SocketTCPNotify is TCPConnectionNotify
   fun ref closed(conn: TCPConnection ref) =>
     _parent.notify_closed()
   
-  fun ref received(conn: TCPConnection ref, data: Array[U8] iso): Bool =>
+  fun ref received(conn: TCPConnection ref, data: Array[U8] iso,
+    times: USize): Bool
+  =>
     _parent.notify_input(consume data)
     true

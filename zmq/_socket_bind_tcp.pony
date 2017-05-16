@@ -26,6 +26,8 @@ class _SocketBindTCPListenNotify is TCPListenNotify
   
   fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
     _SocketTCPNotify(_SocketPeerTCPBound(_parent, _socket_opts))
+  
+  fun ref not_listening(listen: TCPListener ref) => None // TODO
 
 actor _SocketPeerTCPBound is (_SocketTCPNotifiable & zmtp.SessionNotify)
   let _parent: Socket
