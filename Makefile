@@ -26,4 +26,6 @@ lldb-test: bin/test
 ci: test
 
 ci-setup:
+	ls pony-stable || git clone --depth=1 https://github.com/ponylang/pony-stable
+	make -C pony-stable install
 	apt-get update && apt-get install -y libsodium-dev
