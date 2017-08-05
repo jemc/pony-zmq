@@ -62,19 +62,19 @@ class Z85Test is UnitTest
     ] end)
   
   fun test_pair(h: TestHelper, str: String, bin: Array[U8] val) =>
-    try h.assert_eq[String](Z85.encode(bin), str)
+    try h.assert_eq[String](Z85.encode(bin)?, str)
     else h.fail("expected to be able to Z85-encode to string: "+str)
     end
-    try h.assert_eq[String](Z85.decode(str), recover String.>append(bin) end)
+    try h.assert_eq[String](Z85.decode(str)?, recover String.>append(bin) end)
     else h.fail("expected to be able to Z85-decode from string: "+str)
     end
   
   fun test_decode_error(h: TestHelper, str: String) =>
-    try Z85.decode(str)
+    try Z85.decode(str)?
       h.fail("expected NOT to be able to Z85-decode from string: "+str)
     end
   
   fun test_encode_error(h: TestHelper, bin: Array[U8] val) =>
-    try Z85.encode(bin)
+    try Z85.encode(bin)?
       h.fail("expected NOT to be able to Z85-encode the binary.")
     end

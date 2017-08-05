@@ -19,7 +19,7 @@ class _CurveMessageWriter is MessageWriteTransform
     let output = recover trn Array[U8] end
     
     for node in message.nodes() do
-      let frame': (Frame | None) = try node() else None end
+      let frame': (Frame | None) = try node()? else None end
       
       match frame' | let frame: Frame =>
         let message_box = CommandAuthCurveMessageBox
@@ -30,7 +30,7 @@ class _CurveMessageWriter is MessageWriteTransform
         let short_nonce = nonce_gen.next_short()
         let nonce = CryptoBoxNonce(nonce_prefix + short_nonce)
         command.short_nonce = short_nonce
-        command.data_box = try CryptoBox(message_box.string(), nonce, sk, pk) else
+        command.data_box = try CryptoBox(message_box.string(), nonce, sk, pk)? else
                              ""  // TODO: some way to protocol-error from here?
                            end
         output.append(CommandParser.write(command))

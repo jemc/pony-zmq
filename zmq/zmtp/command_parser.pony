@@ -30,17 +30,17 @@ primitive CommandParser
     var offset: USize = 0
     
     // Peek ident byte to determine number of size bytes, then peek size.
-    let ident = buffer.peek_u8(); offset = offset + 1
+    let ident = buffer.peek_u8()?; offset = offset + 1
     let size = match ident
-               | 0x04 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
-               | 0x06 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
+               | 0x04 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1)?)
+               | 0x06 => offset = offset + 8; buffer.peek_u64_be(1)?.usize() // TODO: this breaks for 32-bit systems - we need a better solution
                // Note that the following are not actually allowed by spec,
                // but they are used by the libzmq implementation for
                // CURVE MESSAGE commands, so we have to accept them for interop.
-               | 0x00 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
-               | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
-               | 0x02 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
-               | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
+               | 0x00 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1)?)
+               | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1)?)
+               | 0x02 => offset = offset + 8; buffer.peek_u64_be(1)?.usize() // TODO: this breaks for 32-bit systems - we need a better solution
+               | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)?.usize() // TODO: this breaks for 32-bit systems - we need a better solution
                else
                  notify.protocol_error("unknown command ident byte: " + Format.int[U8](ident, FormatHex))
                  error
@@ -50,14 +50,14 @@ primitive CommandParser
     if buffer.size() < (offset + size) then error end
     
     // Skip the bytes obtained by peeking.
-    buffer.skip(consume offset)
+    buffer.skip(consume offset)?
     
     // Read the name size and name string.
-    let name_size = USize.from[U8](buffer.u8())
+    let name_size = USize.from[U8](buffer.u8()?)
     let name: String trn = recover String end
-    name.append(buffer.block(name_size))
+    name.append(buffer.block(name_size)?)
     
     // Read the rest of the body.
-    let bytes: Array[U8] val = buffer.block(size - 1 - name_size)
+    let bytes: Array[U8] val = buffer.block(size - 1 - name_size)?
     
     CommandUnknown(consume name, consume bytes)

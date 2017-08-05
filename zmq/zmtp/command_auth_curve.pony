@@ -33,12 +33,12 @@ class CommandAuthCurveHello is Command
     let orig_bytes = orig.bytes()
     let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    version_major = buffer.u8()
-    version_minor = buffer.u8()
-    buffer.skip(72) // anti-amplification padding
-    ct_pk = CryptoBoxPublicKey(recover String.>append(buffer.block(32)) end)
-    short_nonce = recover String.>append(buffer.block(8)) end
-    signature_box = recover String.>append(buffer.block(80)) end
+    version_major = buffer.u8()?
+    version_minor = buffer.u8()?
+    buffer.skip(72)? // anti-amplification padding
+    ct_pk = CryptoBoxPublicKey(recover String.>append(buffer.block(32)?) end)
+    short_nonce = recover String.>append(buffer.block(8)?) end
+    signature_box = recover String.>append(buffer.block(80)?) end
 
 class CommandAuthCurveWelcome is Command
   var long_nonce: String = ""
@@ -58,8 +58,8 @@ class CommandAuthCurveWelcome is Command
     let orig_bytes = orig.bytes()
     let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    long_nonce = recover String.>append(buffer.block(16)) end
-    data_box = recover String.>append(buffer.block(144)) end
+    long_nonce = recover String.>append(buffer.block(16)?) end
+    data_box = recover String.>append(buffer.block(144)?) end
 
 class CommandAuthCurveInitiate is Command
   var cookie: String = ""
@@ -81,9 +81,9 @@ class CommandAuthCurveInitiate is Command
     let orig_bytes = orig.bytes()
     let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    cookie = recover String.>append(buffer.block(96)) end
-    short_nonce = recover String.>append(buffer.block(8)) end
-    data_box = recover String.>append(buffer.block(buffer.size())) end
+    cookie = recover String.>append(buffer.block(96)?) end
+    short_nonce = recover String.>append(buffer.block(8)?) end
+    data_box = recover String.>append(buffer.block(buffer.size())?) end
 
 class CommandAuthCurveReady is Command
   var short_nonce: String = ""
@@ -103,8 +103,8 @@ class CommandAuthCurveReady is Command
     let orig_bytes = orig.bytes()
     let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    short_nonce = recover String.>append(buffer.block(8)) end
-    data_box = recover String.>append(buffer.block(buffer.size())) end
+    short_nonce = recover String.>append(buffer.block(8)?) end
+    data_box = recover String.>append(buffer.block(buffer.size())?) end
 
 class CommandAuthCurveError is Command
   var reason: String = ""
@@ -140,8 +140,8 @@ class CommandAuthCurveMessage is Command
     let orig_bytes = orig.bytes()
     let buffer = recover iso _Buffer.>append(orig_bytes) end
     
-    short_nonce = recover String.>append(buffer.block(8)) end
-    data_box = recover String.>append(buffer.block(buffer.size())) end
+    short_nonce = recover String.>append(buffer.block(8)?) end
+    data_box = recover String.>append(buffer.block(buffer.size())?) end
 
 ///
 // Encrypted boxes inside of Commands
@@ -221,7 +221,7 @@ class CommandAuthCurveMessageBox
     output
   
   fun ref apply(data: String): CommandAuthCurveMessageBox =>
-    let flags = try data(0) else 0x00 end
+    let flags = try data(0)? else 0x00 end
     has_more = flags != 0x00
     payload = data.substring(1)
     this

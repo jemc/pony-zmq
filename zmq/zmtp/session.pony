@@ -57,19 +57,19 @@ class Session
     notify.write(Greeting.write(keeper.auth_mechanism(), keeper.as_server()))
   
   fun ref _read_greeting(buffer: _Buffer ref)? =>
-    Greeting.read(buffer, notify, keeper.auth_mechanism(), keeper.as_server())
+    Greeting.read(buffer, notify, keeper.auth_mechanism(), keeper.as_server())?
   
   fun ref _write_command(command: Command) =>
     notify.write(CommandParser.write(command))
   
   fun ref _read_command(buffer: _Buffer ref): CommandUnknown? =>
-    CommandParser.read(buffer, notify)
+    CommandParser.read(buffer, notify)?
   
   fun ref _read_specific_command[A: Command ref](buffer: _Buffer ref): A? =>
-    let c_data = _read_command(buffer)
+    let c_data = _read_command(buffer)?
     let command = A.create()
     
-    try command(c_data) else
+    try command(c_data)? else
       notify.protocol_error("Expected "+command.name()+" command, got: "+c_data.name())
       error
     end
@@ -77,7 +77,7 @@ class Session
     command
   
   fun ref _read_message(buffer: _Buffer ref): Message trn^? =>
-    _message_parser.read(buffer, notify)
+    _message_parser.read(buffer, notify)?
   
   fun ref _add_to_message(frame: Frame) =>
     _message_parser.add_to_message(frame)

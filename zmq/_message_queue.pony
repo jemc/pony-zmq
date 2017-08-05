@@ -29,7 +29,7 @@ class _MessageQueue
     """
     if _empty then return end
     while true do
-      let msg = try _inner.shift() else (_empty = true; return) end
+      let msg = try _inner.shift()? else (_empty = true; return) end
       target.write(_write_transform(msg))
     end
   
@@ -69,7 +69,7 @@ class _MessageQueueSimple
     """
     if _empty then return end
     while true do
-      let msg = try _inner.shift() else (_empty = true; return) end
+      let msg = try _inner.shift()? else (_empty = true; return) end
       target.received(msg)
     end
   

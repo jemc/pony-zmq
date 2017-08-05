@@ -24,9 +24,9 @@ class MechanismAuthNull is Mechanism
   fun ref handle_input(buffer: _Buffer ref) =>
     try while true do
       match _state
-      | _MechanismAuthNullStateReadGreeting       => _read_greeting(buffer)
-      | _MechanismAuthNullStateReadHandshakeReady => _read_ready_command(buffer)
-      | _MechanismAuthNullStateReadMessage        => _read_message(buffer)
+      | _MechanismAuthNullStateReadGreeting       => _read_greeting(buffer)?
+      | _MechanismAuthNullStateReadHandshakeReady => _read_ready_command(buffer)?
+      | _MechanismAuthNullStateReadMessage        => _read_message(buffer)?
       end
     end end
   
@@ -38,7 +38,7 @@ class MechanismAuthNull is Mechanism
     _session._write_greeting()
   
   fun ref _read_greeting(buffer: _Buffer ref)? =>
-    _session._read_greeting(buffer)
+    _session._read_greeting(buffer)?
     _next_state(_MechanismAuthNullStateReadHandshakeReady)
     _write_ready_command()
   
@@ -48,9 +48,9 @@ class MechanismAuthNull is Mechanism
     _session._write_command(command)
   
   fun ref _read_ready_command(buffer: _Buffer ref)? =>
-    let command = _session._read_specific_command[CommandAuthNullReady](buffer)
+    let command = _session._read_specific_command[CommandAuthNullReady](buffer)?
     
-    let other_type = try command.metadata("Socket-Type") else "" end
+    let other_type = try command.metadata("Socket-Type")? else "" end
     if not _session.keeper.socket_type_accepts(other_type) then
       let this_type = _session.keeper.socket_type_string()
       _session.notify.protocol_error(this_type+" socket cannot accept: "+other_type)
@@ -61,5 +61,5 @@ class MechanismAuthNull is Mechanism
     _next_state(_MechanismAuthNullStateReadMessage)
   
   fun ref _read_message(buffer: _Buffer ref) ? =>
-    _session.notify.received(_session._read_message(buffer))
+    _session.notify.received(_session._read_message(buffer)?)
     _next_state(_MechanismAuthNullStateReadMessage)

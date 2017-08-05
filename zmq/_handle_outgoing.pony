@@ -20,7 +20,7 @@ class _HandleOutgoingAllPeers is _HandleOutgoing
   fun ref lost_peer(p: _SocketPeer) =>
     for node in _peers.nodes() do
       try
-        if node() is p then
+        if node()? is p then
           node.remove()
           return
         end
@@ -44,7 +44,7 @@ class _HandleOutgoingRoundRobin is _HandleOutgoing
   fun ref lost_peer(p: _SocketPeer) =>
     for node in _peers.nodes() do
       try
-        if node() is p then
+        if node()? is p then
           node.remove()
           return
         end
@@ -52,8 +52,8 @@ class _HandleOutgoingRoundRobin is _HandleOutgoing
     end
   
   fun ref apply(m: Message)? =>
-    (try _peers(_robin = _robin + 1)
-    else _robin = 1; _peers(0)
+    (try _peers(_robin = _robin + 1)?
+    else _robin = 1; _peers(0)?
     end).send(m)
 
 class _HandleOutgoingSubscribedPeers is _HandleOutgoing

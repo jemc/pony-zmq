@@ -33,10 +33,10 @@ class CommandUtil
         let key   = recover iso String end
         let value = recover iso String end
         
-        let key_size = USize.from[U8](buffer.u8())
-        key.append(buffer.block(key_size))
-        let value_size = USize.from[U32](buffer.u32_be())
-        value.append(buffer.block(value_size))
+        let key_size = USize.from[U8](buffer.u8()?)
+        key.append(buffer.block(key_size)?)
+        let value_size = USize.from[U32](buffer.u32_be()?)
+        value.append(buffer.block(value_size)?)
         
         metadata(consume key) = consume value
       end

@@ -53,13 +53,13 @@ actor _SocketReactor is zmq.SocketNotifiableActor
   fun ref maybe_run_handlers() =>
     try
       while (_handlers.size() > 0) and (_messages.size() > 0) do
-        match _handlers.shift()
+        match _handlers.shift()?
         | let h: _MessageHandler =>
-          (let peer, let message) = _messages.shift()
+          (let peer, let message) = _messages.shift()?
           (consume h)(message)
         
         | let h: _PeerMessageHandler =>
-          (let peer, let message) = _messages.shift()
+          (let peer, let message) = _messages.shift()?
           (consume h)(peer, message)
         
         | (let n': USize, let h: _MessageListHandler) =>
@@ -69,7 +69,7 @@ actor _SocketReactor is zmq.SocketNotifiableActor
           let list = List[zmq.Message]
           while n > 0 do
             n = n - 1
-            (let peer, let message) = _messages.shift()
+            (let peer, let message) = _messages.shift()?
             list.push(message)
           end
           (consume h)(list)

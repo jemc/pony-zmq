@@ -34,7 +34,7 @@ trait SocketTypeTest is UnitTest
       
       for expected in expected_list.values() do
         for node in list.nodes() do
-          try if node() == expected then
+          try if node()? == expected then
             node.remove()
             break
           end end

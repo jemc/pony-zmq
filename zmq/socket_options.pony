@@ -19,7 +19,7 @@ interface tag SocketOption[A: Any #share]
     try
       var iter = list.values()
       while iter.has_next() do
-        try var optval = iter.next() as _SocketOptionWithValue[A]
+        try var optval = iter.next()? as _SocketOptionWithValue[A]
           if optval.option_tag() is this then
             return optval.value
           end
@@ -37,7 +37,7 @@ class val _SocketOptionWithValue[A: Any #share] is SocketOptionWithValue
   let option: SocketOption[A]
   let value: A
   fun option_tag(): Any tag => option
-  fun validate(): None? => option.validate(value)
+  fun validate(): None? => option.validate(value)?
   new val create(option': SocketOption[A], value': A) =>
     option = option'
     value = value'
@@ -50,12 +50,12 @@ type SocketOptions is List[SocketOptionWithValue]
 
 primitive _SocketOptionsUtil
   fun val set_in(this_opt: SocketOptionWithValue, list: SocketOptions): Bool =>
-    try this_opt.validate() else return false end
+    try this_opt.validate()? else return false end
     
     match this_opt | let optval: SocketOptionWithValue =>
       for other_node in list.nodes() do
         try
-          let other = other_node()
+          let other = other_node()?
           if other.option_tag() is this_opt.option_tag() then
             other_node.remove()
           end

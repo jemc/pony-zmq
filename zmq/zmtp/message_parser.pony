@@ -12,7 +12,7 @@ class MessageWriter is MessageWriteTransform
     let frame_count = message.size()
     
     for node in message.nodes() do
-      let frame': (Frame | None) = try node() else None end
+      let frame': (Frame | None) = try node()? else None end
       let has_more = node.has_next()
       
       match frame' | let frame: Frame =>
@@ -41,10 +41,10 @@ class MessageParser
       var offset: USize = 0
       
       // Peek ident byte to determine number of size bytes, then peek size.
-      let ident = buffer.peek_u8(); offset = offset + 1
+      let ident = buffer.peek_u8()?; offset = offset + 1
       let size = match ident
-                 | 0x00 | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1))
-                 | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1).usize() // TODO: this breaks for 32-bit systems - we need a better solution
+                 | 0x00 | 0x01 => offset = offset + 1; USize.from[U8](buffer.peek_u8(1)?)
+                 | 0x02 | 0x03 => offset = offset + 8; buffer.peek_u64_be(1)?.usize() // TODO: this breaks for 32-bit systems - we need a better solution
                  else
                    notify.protocol_error("unknown frame ident byte: " + Format.int[U8](ident, FormatHex))
                    error
@@ -54,11 +54,11 @@ class MessageParser
       if buffer.size() < (offset + size) then error end
       
       // Skip the bytes obtained by peeking.
-      buffer.skip(consume offset)
+      buffer.skip(consume offset)?
       
       // Read the frame body and append it to the ongoing message.
       let frame = recover trn String end
-      frame.append(buffer.block(size))
+      frame.append(buffer.block(size)?)
       _message.push(consume frame)
       
       // Get has_more flag from ident byte

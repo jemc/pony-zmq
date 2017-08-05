@@ -27,12 +27,12 @@ class val ZapRequest
   
   new val from_message(m: Message)? =>
     let iter = m.values()
-    version   = iter.next()
-    id        = iter.next()
-    domain    = iter.next()
-    address   = iter.next()
-    identity  = iter.next()
-    mechanism = iter.next()
+    version   = iter.next()?
+    id        = iter.next()?
+    domain    = iter.next()?
+    address   = iter.next()?
+    identity  = iter.next()?
+    mechanism = iter.next()?
     for credential in iter do
       credentials.push(credential)
     end
@@ -79,12 +79,12 @@ class val ZapResponse
   
   new val from_message(m: Message)? =>
     let iter = m.values()
-    version     = iter.next()
-    id          = iter.next()
-    status_code = iter.next()
-    status_text = iter.next()
-    user_id     = iter.next()
-    CommandUtil.read_string_as_metadata(metadata, iter.next())
+    version     = iter.next()?
+    id          = iter.next()?
+    status_code = iter.next()?
+    status_text = iter.next()?
+    user_id     = iter.next()?
+    CommandUtil.read_string_as_metadata(metadata, iter.next()?)
     if iter.has_next() then error end
   
   fun as_message(): Message => // TODO: test commutativity

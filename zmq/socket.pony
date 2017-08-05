@@ -92,11 +92,11 @@ actor Socket
     match action
     | let e: Bind =>
       if not _binds.contains(e) then
-        _binds(e) = try _make_bind(e) else return end
+        _binds(e) = try _make_bind(e)? else return end
       end
     | let e: Connect =>
       if not _peers.contains(e) then
-        let peer = try _make_peer(e) else return end
+        let peer = try _make_peer(e)? else return end
         _peers(e) = peer
         _new_peer(peer)
       end
@@ -118,12 +118,12 @@ actor Socket
     _maybe_send_messages()
   
   be _received(peer: _SocketPeer, message: Message) =>
-    try _handle_in(peer, message)
+    try _handle_in(peer, message)?
       _notify.received(this, peer, consume message)
     end
   
   be _connected_from_bind(bind': _SocketBind, peer: _SocketPeer) =>
-    (try _bind_peers(bind') else
+    (try _bind_peers(bind')? else
       let list = List[_SocketPeer]
       _bind_peers(bind') = list
       list
@@ -133,11 +133,11 @@ actor Socket
   be _bind_closed(bind': _SocketBind) =>
     for (key, other) in _binds.pairs() do
       if other is bind' then
-        try _binds.remove(key) end
+        try _binds.remove(key)? end
       end
     end
     try
-      for peer in _bind_peers(bind').values() do
+      for peer in _bind_peers(bind')?.values() do
         _lost_peer(peer)
       end
     end
@@ -145,8 +145,8 @@ actor Socket
   
   fun ref _maybe_send_messages() =>
     try while true do
-      let m = _outgoing.shift()
-      try _handle_out(m)
+      let m = _outgoing.shift()?
+      try _handle_out(m)?
       else _outgoing.unshift(m)
         error
       end

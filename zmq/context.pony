@@ -15,7 +15,7 @@ actor Context
       _ready_binds(string) = bind
       
       // Connect peers that are already waiting for a bind
-      try let peers = _ready_peers(string)
+      try let peers = _ready_peers(string)?
         for peer in peers.values() do
           bind.accept_connection(peer)
         end
@@ -24,7 +24,7 @@ actor Context
   
   be _inproc_connect(string: String, peer: _SocketPeerInProc) =>
     // Add this peer to peer list for this string
-    let peer_list = try _ready_peers(string) else
+    let peer_list = try _ready_peers(string)? else
                       let list = List[_SocketPeerInProc]
                       _ready_peers(string) = list
                       list
@@ -32,4 +32,4 @@ actor Context
     peer_list.push(peer)
     
     // Connect to a bind if there is one available
-    try _ready_binds(string).accept_connection(peer) end
+    try _ready_binds(string)?.accept_connection(peer) end
