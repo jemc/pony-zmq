@@ -64,8 +64,6 @@ primitive _SocketOptionsUtil
       
       list.push(optval)
       true
-    else
-      false
     end
 
 ///

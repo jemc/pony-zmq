@@ -1,5 +1,7 @@
 # pony-zmq
 
+[![Build Status](https://travis-ci.org/d-led/pony-zmq.svg?branch=master)](https://travis-ci.org/d-led/pony-zmq)
+
 Pure Pony implementation of the ZeroMQ messaging library.
 
 ## Testing
