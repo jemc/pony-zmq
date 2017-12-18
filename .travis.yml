@@ -4,4 +4,4 @@ services:
   - docker
 
 script:
-  - docker-compose up --build
+  - docker-compose -f docker-compose-ci.yml up --build

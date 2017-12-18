@@ -3,3 +3,4 @@ services:
   pony:
     build:
       context: .
+      dockerfile: Dockerfile.ci
