@@ -52,21 +52,17 @@ primitive _SocketOptionsUtil
   fun val set_in(this_opt: SocketOptionWithValue, list: SocketOptions): Bool =>
     try this_opt.validate()? else return false end
     
-    match this_opt | let optval: SocketOptionWithValue =>
-      for other_node in list.nodes() do
-        try
-          let other = other_node()?
-          if other.option_tag() is this_opt.option_tag() then
-            other_node.remove()
-          end
+    for other_node in list.nodes() do
+      try
+        let other = other_node()?
+        if other.option_tag() is this_opt.option_tag() then
+          other_node.remove()
         end
       end
-      
-      list.push(optval)
-      true
-    else
-      false
     end
+    
+    list.push(this_opt)
+    true
 
 ///
 // Internal-only socket options
