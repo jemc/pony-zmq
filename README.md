@@ -1,6 +1,4 @@
-# pony-zmq
-
-[![Build Status](https://travis-ci.org/jemc/pony-zmq.svg?branch=master)](https://travis-ci.org/jemc/pony-zmq)
+# pony-zmq [![CircleCI](https://circleci.com/gh/jemc/pony-zmq.svg?style=shield)](https://circleci.com/gh/jemc/pony-zmq)
 
 Pure Pony implementation of the ZeroMQ messaging library.
 

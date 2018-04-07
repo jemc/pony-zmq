@@ -1,7 +1,0 @@
-sudo: required
-
-services:
-  - docker
-
-script:
-  - docker-compose -f docker-compose-ci.yml up --build
