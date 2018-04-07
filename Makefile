@@ -3,11 +3,7 @@ all: test
 
 PKG=zmq
 
-.deps: bundle.json
-	stable fetch
-	touch .deps
-
-bin/test: .deps $(shell find ${PKG} .deps -name *.pony)
+bin/test: $(shell find ${PKG} .deps -name *.pony)
 	mkdir -p bin
 	stable env ponyc --debug -o bin ${PKG}/test
 
@@ -26,6 +22,5 @@ lldb-test: bin/test
 ci: test
 
 ci-setup:
-	ls pony-stable || git clone --depth=1 https://github.com/ponylang/pony-stable
-	make -C pony-stable install
 	apt-get update && apt-get install -y libsodium-dev
+	stable fetch

@@ -5,17 +5,15 @@ jobs:
       - image: ponylang/ponyc:release
     steps:
       - checkout
-      - run: apt-get update && apt-get install -y libsodium-dev
-      - run: stable fetch
-      - run: make test
+      - run: make ci-setup
+      - run: make ci
   vs-ponyc-master:
     docker:
       - image: ponylang/ponyc:latest
     steps:
       - checkout
-      - run: apt-get update && apt-get install -y libsodium-dev
-      - run: stable fetch
-      - run: make test
+      - run: make ci-setup
+      - run: make ci
 
 workflows:
   version: 2
