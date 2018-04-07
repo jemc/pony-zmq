@@ -5,6 +5,7 @@ jobs:
       - image: ponylang/ponyc:release
     steps:
       - checkout
+      - run: apt-get update && apt-get install libsodium-dev
       - run: stable fetch
       - run: make test
   vs-ponyc-master:
@@ -12,6 +13,7 @@ jobs:
       - image: ponylang/ponyc:latest
     steps:
       - checkout
+      - run: apt-get update && apt-get install libsodium-dev
       - run: stable fetch
       - run: make test
 
