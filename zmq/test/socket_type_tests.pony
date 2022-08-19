@@ -1,5 +1,5 @@
 
-use "ponytest"
+use "pony_test"
 use "collections"
 use zmq = ".."
 

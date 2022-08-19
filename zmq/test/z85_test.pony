@@ -1,5 +1,5 @@
 
-use "ponytest"
+use "pony_test"
 use "../z85"
 
 class Z85Test is UnitTest

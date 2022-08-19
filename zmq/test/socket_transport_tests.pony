@@ -1,5 +1,5 @@
 
-use "ponytest"
+use "pony_test"
 use "net"
 use zmq = ".."
 use zmtp = "../zmtp"
