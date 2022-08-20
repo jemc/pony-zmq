@@ -1,5 +1,5 @@
 
-use "ponytest"
+use "pony_test"
 
 actor Main is TestList
   new create(env: Env) => PonyTest(env, this)
